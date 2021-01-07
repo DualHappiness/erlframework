@@ -1,0 +1,16 @@
+{application, erl_mysql_gate,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {erl_mysql_gate_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    erl_gate
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.

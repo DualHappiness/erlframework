@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="style.xsl"?>
+<!-- c2s 客户端到服务器请求 -->
+<!-- s2c 服务器客到户端推送 -->
+<protocol>
+    <error desc="错误码描述">
+        <code id="0" name="E_OK" desc="成功" />
+        <code id="1" name="E_UNKNOWN" desc="未知错误" />
+        <code id="5" name="E_FAILED" desc="失败" />
+        <code id="6" name="E_NOT_SUPPORT_VSN" desc="新版本已经准备好，请重启应用哦~" />
+    </error>
+    <types desc="全局自定义类型列表">
+        <type name="p_player" desc="玩家信息">
+            <f t="uint64" name="id" desc="玩家id"/>
+            <f t="string" name="name" desc="名称"/>
+            <f t="uint8" name="sex" desc="性别"/>
+            <f t="uint32" name="lvl" desc="玩家等级"/>
+            <f t="string" name="ip" desc="ip" />
+        </type>
+        <!-- 如果很浪费 则把货币和物品拆看 毕竟两个可能出现的数量级有差别 -->
+        <type name="p_item" desc="通用物品类型">
+            <f t="uint32" name="id" desc="物品id"/>
+            <f t="uint64" name="count" desc="物品数量"/>
+        </type>
+    </types>
+    <section id="10" name="acc" desc="账户信息">
+        <msg id="0" name="login" desc="用户登录">
+            <c2s>
+                <f t="string" name="platform" desc="平台名字"/>
+                <f t="string" name="game_account_id" desc="游戏的账号Id" />
+                <f t="string" name="game_account_sign" desc="游戏的账号Id的签名" />
+                <f t="string" name="channel_open_id" desc= "渠道的用户id"/>
+                <f t="string" name="channel_param" desc="渠道其他参数"/>
+                <f t="uint8" name="mode" desc="mode"/>
+                <f t="string" name="vsn" desc="版本"/>
+            </c2s>
+            <s2c>
+                <f t="uint16" name="code" desc="错误码(0成功，其他:失败错误码)" />
+                <f t="uint64" name="id" desc="角色id" />
+                <f t="string" name="channel_open_id" desc= "运营平台的用户id"/>
+                <f t="string" name="game_account_id" desc="游戏的账号Id" />
+                <f t="string" name="game_account_sign" desc="游戏的账号Id的签名" />
+                <f t="string" name="game_login_key" desc="登陆key 用于重登陆时发送" />
+            </s2c>
+        </msg>
+        <msg id="2" name="create" desc="创建角色">
+            <c2s>
+            </c2s>
+            <s2c>
+                <f t ="uint16" name="code" desc="错误码" />
+                <f t ="uint64" name="id" desc="角色id"/>
+            </s2c>
+        </msg>
+        <msg id="3" name="create_with_params" desc="创建角色">
+            <c2s>
+                <f t="uint8" name="head" desc="头像Id" />
+                <f t="uint8" name="sex" desc="性别" />
+                <f t="string" name="name" desc="角色名字" />
+                <f t="string" name="params" desc="Json字符串" />
+            </c2s>
+        </msg>
+        <msg id="4" name="enter" desc="角色进入游戏">
+            <c2s>
+                <f t ="uint64" name="id" desc="角色id"/>
+            </c2s>
+            <s2c>
+                <f t="uint16" name="code" desc="错误码" />
+            </s2c>
+        </msg>
+        <msg id="5" name="kick_offline" desc="玩家被踢下线">
+            <s2c>
+                <f t="string" name="content" desc="提示信息" />
+            </s2c>
+        </msg>
+        <msg id="6" name="relogin" desc="断线重新登陆">
+            <c2s>
+                <f t="string" name="platform" desc="平台名字"/>
+                <f t="string" name="game_account_id" desc="游戏角色账号Id"/>
+                <f t="string" name="game_account_sign" desc="游戏角色账号签名"/>
+                <f t="uint64" name="id" desc="玩家Id"/>
+                <f t="string" name="channel_param" desc="参数"/>
+                <f t="string" name="vsn" desc="版本"/>
+            </c2s>
+            <s2c>
+                <f t="uint16" name="code" desc="错误码(0成功,1失败)"/>
+            </s2c>
+        </msg>
+        <msg id="7" name="servertime" desc="获取服务器时间">
+            <c2s/>
+            <s2c>
+                <f t="uint32" name="time" desc="服务器时间"/>
+            </s2c>
+        </msg>
+        <msg id="10" name="ban" desc="账号被禁">
+            <s2c>
+                <f t="uint8" name="reason" desc="原因 1:账号 2:IP" />
+                <f t="uint32" name="end_time" desc="结束时间戳" />
+            </s2c>
+        </msg>
+        <msg id="11" name="maintain" desc="服务器维护">
+            <s2c>
+                <f t="uint16" name="state" desc="状态码1 维护中" />
+                <f t="string" name="desc" desc="描述" />
+            </s2c>
+        </msg>
+        <msg id="12" name="version" desc="版本信息">
+            <c2s>
+                <f t="string" name="vsn" desc="版本信息"/>
+            </c2s>
+            <s2c>
+                <f t="uint8" name="result" desc="是否支持"/>
+            </s2c>
+        </msg>
+    </section>
+    <section id="201" name="friend_service" desc="社交服务协议">
+        <!-- callback register -->
+        <msg id="0" name="register" desc="">
+            <s2c>
+                <f t="string" name="user_id" desc=""/>
+                <f t="string" name="agent_type" desc=""/>
+                <f t="string" name="agent_addr" desc=""/>
+            </s2c>
+            <c2s/>
+        </msg>
+        <msg id="1" name="unregister" desc="">
+            <s2c>
+                <f t="string" name="user_id" desc=""/>
+            </s2c>
+            <c2s/>
+        </msg>
+        <!-- chat service -->
+        <msg id="2" name="join" desc="">
+            <s2c>
+                <f t="string" name="type" desc=""/>
+                <f t="string" name="channel_id" desc=""/>
+                <f t="string" name="user_id" desc=""/>
+            </s2c>
+            <c2s/>
+        </msg>
+        <msg id="3" name="left" desc="">
+            <s2c>
+                <f t="string" name="type" desc=""/>
+                <f t="string" name="channel_id" desc=""/>
+                <f t="string" name="user_id" desc=""/>
+            </s2c>
+            <c2s/>
+        </msg>
+        <msg id="4" name="send" desc="">
+            <s2c>
+                <f t="string" name="type" desc=""/>
+                <f t="string" name="to_id" desc=""/>
+                <f t="string" name="from_id" desc=""/>
+                <f t="string" name="data" desc=""/>
+            </s2c>
+            <c2s/>
+        </msg>
+    </section>
+</protocol>

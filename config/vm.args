@@ -1,0 +1,6 @@
+-sname erl_mysql_demo
+
+-setcookie erl_mysql_demo_cookie
+
++K true
++A30

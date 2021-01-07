@@ -1,0 +1,19 @@
+{application, erl_mysql_oauth,
+ [{description, "An OTP application"},
+  {vsn, "1.0.0"},
+  {registered, []},
+  {mod, {erl_mysql_oauth_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    erl_mysql_adapter,
+    datadescsql_container,
+    datatable,
+    dataloggersql
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.

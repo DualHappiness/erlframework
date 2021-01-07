@@ -1,0 +1,14 @@
+{application, erl_oauth_lib,
+ [{description, "universal oauth lib"},
+  {vsn, "1.0.0"},
+  {applications,
+   [kernel,
+    stdlib,
+    eunit
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
