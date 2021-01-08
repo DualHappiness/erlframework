@@ -1,0 +1,5 @@
+%% encoding: UTF-8
+{application,proto_container}.
+{modules,[demo_proto_acc,demo_proto_c2s,demo_proto_convert,
+          demo_proto_custom_types,demo_proto_friend_service,demo_proto_s2c,
+          demo_proto_util]}.

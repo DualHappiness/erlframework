@@ -10,12 +10,12 @@
 -spec login_validate(Msg :: term(), Args :: term()) -> {ok,
                                                         {oauth_fail, Reason :: term()} |
                                                         {oauth_success, term()}}.
-login_validate({_Mod, _MsgID, Req}, Args) ->
+login_validate({_Mod, Req}, Args) ->
     IP = proplists:get_value(ip, Args),
     ?assert(not ?MATCHES(undefine, IP)),
     #acc_login_c2s{platform = PlatformBin, channel_open_id = OpenID} = Req,
     %% TODO 增加safe 防止攻击
-    AuthBody = #auth_body{platform = binary_to_atom(PlatformBin), openid = OpenID},
+    AuthBody = #auth_body{platform = binary_to_atom(PlatformBin, latin1), openid = OpenID},
     case erl_oauth_lib:auth(AuthBody) of
       {error, Reason} ->
           {ok, {oauth_fail, Reason}};

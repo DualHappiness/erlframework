@@ -1,0 +1,3 @@
+%% encoding: UTF-8
+{application,erl_mysql_demo}.
+{modules,[erl_mysql_demo_app,erl_mysql_demo_sup]}.

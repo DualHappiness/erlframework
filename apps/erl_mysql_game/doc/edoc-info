@@ -1,0 +1,4 @@
+%% encoding: UTF-8
+{application,erl_mysql_game}.
+{modules,[erl_mysql_game_app,erl_mysql_game_msg_router,erl_mysql_game_msg_sup,
+          erl_mysql_game_sup,gen_mod,player_server,player_server_mgr]}.

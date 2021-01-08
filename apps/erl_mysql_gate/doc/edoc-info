@@ -1,0 +1,3 @@
+%% encoding: UTF-8
+{application,erl_mysql_gate}.
+{modules,[erl_mysql_gate_app,erl_mysql_gate_sup]}.

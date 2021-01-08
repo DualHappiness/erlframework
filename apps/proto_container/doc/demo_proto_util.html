@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Module demo_proto_util</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+</head>
+<body bgcolor="white">
+<div class="navbar"><a name="#navbar_top"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<hr>
+
+<h1>Module demo_proto_util</h1>
+<ul class="index"><li><a href="#description">Description</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>  (自动生成， 请勿修改).
+
+
+<h2><a name="description">Description</a></h2><p>  (自动生成， 请勿修改)</p>
+  
+  ----------------------------------------------
+<h2><a name="index">Function Index</a></h2>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#de_bytes-1">de_bytes/1</a></td><td>对bytes字符串进行解压.</td></tr>
+<tr><td valign="top"><a href="#de_int16-1">de_int16/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_int32-1">de_int32/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_int64-1">de_int64/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_int8-1">de_int8/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_loop-3">de_loop/3</a></td><td>对循环进行解码,参看proto_map:move/1函数.</td></tr>
+<tr><td valign="top"><a href="#de_string-1">de_string/1</a></td><td>对字符串进行解压.</td></tr>
+<tr><td valign="top"><a href="#de_uint16-1">de_uint16/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_uint32-1">de_uint32/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_uint64-1">de_uint64/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#de_uint8-1">de_uint8/1</a></td><td>uint8解码.</td></tr>
+<tr><td valign="top"><a href="#en_bytes-1">en_bytes/1</a></td><td>对字符串进行编码.</td></tr>
+<tr><td valign="top"><a href="#en_int16-1">en_int16/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_int32-1">en_int32/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_int64-1">en_int64/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_int8-1">en_int8/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_loop-3">en_loop/3</a></td><td>将列表打包.</td></tr>
+<tr><td valign="top"><a href="#en_loop-4">en_loop/4</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_loop_basic-3">en_loop_basic/3</a></td><td>对基础数据类型进行打包.</td></tr>
+<tr><td valign="top"><a href="#en_string-1">en_string/1</a></td><td>对字符串进行编码.</td></tr>
+<tr><td valign="top"><a href="#en_uint16-1">en_uint16/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_uint32-1">en_uint32/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_uint64-1">en_uint64/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#en_uint8-1">en_uint8/1</a></td><td></td></tr>
+</table>
+
+<h2><a name="functions">Function Details</a></h2>
+
+<h3 class="function"><a name="de_bytes-1">de_bytes/1</a></h3>
+<div class="spec">
+<p><tt>de_bytes(X1) -&gt; any()</tt></p>
+<p> </p>
+</div><p>对bytes字符串进行解压</p>
+
+<h3 class="function"><a name="de_int16-1">de_int16/1</a></h3>
+<div class="spec">
+<p><tt>de_int16(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_int32-1">de_int32/1</a></h3>
+<div class="spec">
+<p><tt>de_int32(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_int64-1">de_int64/1</a></h3>
+<div class="spec">
+<p><tt>de_int64(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_int8-1">de_int8/1</a></h3>
+<div class="spec">
+<p><tt>de_int8(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_loop-3">de_loop/3</a></h3>
+<div class="spec">
+<p><tt>de_loop(X1, Fun, Label) -&gt; any()</tt></p>
+<p> </p>
+</div><p>对循环进行解码,参看proto_map:move/1函数</p>
+
+<h3 class="function"><a name="de_string-1">de_string/1</a></h3>
+<div class="spec">
+<p><tt>de_string(X1) -&gt; any()</tt></p>
+<p> </p>
+</div><p>对字符串进行解压</p>
+
+<h3 class="function"><a name="de_uint16-1">de_uint16/1</a></h3>
+<div class="spec">
+<p><tt>de_uint16(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_uint32-1">de_uint32/1</a></h3>
+<div class="spec">
+<p><tt>de_uint32(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_uint64-1">de_uint64/1</a></h3>
+<div class="spec">
+<p><tt>de_uint64(X1) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="de_uint8-1">de_uint8/1</a></h3>
+<div class="spec">
+<p><tt>de_uint8(X1) -&gt; any()</tt></p>
+<p> </p>
+</div><p>uint8解码</p>
+
+<h3 class="function"><a name="en_bytes-1">en_bytes/1</a></h3>
+<div class="spec">
+<p><tt>en_bytes(X1) -&gt; any()</tt></p>
+<p> </p>
+</div><p>对字符串进行编码</p>
+
+<h3 class="function"><a name="en_int16-1">en_int16/1</a></h3>
+<div class="spec">
+<p><tt>en_int16(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_int32-1">en_int32/1</a></h3>
+<div class="spec">
+<p><tt>en_int32(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_int64-1">en_int64/1</a></h3>
+<div class="spec">
+<p><tt>en_int64(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_int8-1">en_int8/1</a></h3>
+<div class="spec">
+<p><tt>en_int8(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_loop-3">en_loop/3</a></h3>
+<div class="spec">
+<p><tt>en_loop(List, Fun, Label) -&gt; any()</tt></p>
+<p> </p>
+</div><p>将列表打包</p>
+
+<h3 class="function"><a name="en_loop-4">en_loop/4</a></h3>
+<div class="spec">
+<p><tt>en_loop(List, N, Fun, Label) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_loop_basic-3">en_loop_basic/3</a></h3>
+<div class="spec">
+<p><tt>en_loop_basic(List, Type, Label) -&gt; any()</tt></p>
+<p> </p>
+</div><p>对基础数据类型进行打包</p>
+
+<h3 class="function"><a name="en_string-1">en_string/1</a></h3>
+<div class="spec">
+<p><tt>en_string(Str) -&gt; any()</tt></p>
+<p> </p>
+</div><p>对字符串进行编码</p>
+
+<h3 class="function"><a name="en_uint16-1">en_uint16/1</a></h3>
+<div class="spec">
+<p><tt>en_uint16(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_uint32-1">en_uint32/1</a></h3>
+<div class="spec">
+<p><tt>en_uint32(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_uint64-1">en_uint64/1</a></h3>
+<div class="spec">
+<p><tt>en_uint64(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="en_uint8-1">en_uint8/1</a></h3>
+<div class="spec">
+<p><tt>en_uint8(Obj) -&gt; any()</tt></p>
+<p> </p>
+</div>
+<hr>
+
+<div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<p><i>Generated by EDoc</i></p>
+</body>
+</html>

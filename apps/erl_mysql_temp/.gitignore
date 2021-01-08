@@ -17,5 +17,4 @@ _build
 *.iml
 rebar3.crashdump
 *~
-demo_proto_*.erl
-demo_proto*.hrl
+*.erl

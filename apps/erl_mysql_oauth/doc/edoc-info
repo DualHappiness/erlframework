@@ -1,0 +1,4 @@
+%% encoding: UTF-8
+{application,erl_mysql_oauth}.
+{modules,[erl_mysql_db,erl_mysql_db_account,erl_mysql_oauth,
+          erl_mysql_oauth_app,erl_mysql_oauth_sup]}.
