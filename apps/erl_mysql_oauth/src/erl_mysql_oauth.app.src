@@ -6,6 +6,7 @@
   {applications,
    [kernel,
     stdlib,
+    eunit,
     erl_logger,
     erl_oauth_lib,
     proto_container,

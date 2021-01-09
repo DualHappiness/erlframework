@@ -3,9 +3,9 @@
 %%% @doc
 %%% description
 %%% @end
-%%% Created : 2021/01/08
+%%% Created : 2021/01/09
 %%%-------------------------------------------------------------------
--module(player_server_mgr).
+-module(player_data).
 
 -behaviour(gen_server).
 

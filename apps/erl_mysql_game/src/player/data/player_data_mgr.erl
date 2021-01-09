@@ -1,15 +1,15 @@
 %%%-------------------------------------------------------------------
 %%% @author dualwu
 %%% @doc
-%%%     用于把消息转发到指定player
+%%% description
 %%% @end
-%%% Created : 2021/01/08
+%%% Created : 2021/01/09
 %%%-------------------------------------------------------------------
--module(erl_mysql_game_msg_router).
+-module(player_data_mgr).
 
 -behaviour(gen_server).
 
--record(state, {route_map}).
+-record(state, {}).
 
 -type hibernate_term() :: timeout() | hibernate.
 -type reply(Term, State) :: {reply, Term, State} | {reply, Term, State, hibernate_term()}.

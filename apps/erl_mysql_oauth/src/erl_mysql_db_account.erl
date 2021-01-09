@@ -38,17 +38,17 @@ is_exist(AccName, Platform) ->
 
 -spec create(AccName :: accname(),
              Platform :: platform(),
-             IP :: string(),
+             IP :: inet:ip_address(),
              Token :: binary()) -> ok | {error, Reason :: term()}.
 create(AccName, Platform, IP, Token) ->
     Now = erlang:system_time(seconds),
-    case datatable_account:insert(#account_keys{accname = AccName, platform = Platform},
-                                  #account_values{player_id = 0,
-                                                  status = ?ACCOUNT_STATUS_INIT,
-                                                  create_time = Now,
-                                                  create_ip = IP,
-                                                  token = Token})
-        of
+    Key = #account_keys{accname = AccName, platform = maps:get(Platform, ?PLATFORM_MAP)},
+    Value = #account_values{player_id = 0,
+                            status = ?ACCOUNT_STATUS_INIT,
+                            create_time = Now,
+                            create_ip = inet:ntoa(IP),
+                            token = Token},
+    case datatable_account:insert(Key, Value) of
       ok ->
           ok;
       {error, _Reason} ->

@@ -1,1 +1,0 @@
--module(gen_mod).

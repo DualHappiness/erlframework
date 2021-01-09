@@ -1,11 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% @author dualwu
 %%% @doc
-%%%     msg router sup 用来管理关联ets
+%%% 
 %%% @end
-%%% Created : 2021/01/08
+%%% Created : 2021/01/09
 %%%-------------------------------------------------------------------
--module(erl_mysql_game_msg_sup).
+-module(player_sup).
 
 -behaviour(supervisor).
 
@@ -21,6 +21,11 @@ start_link() ->
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
     SupFlags = #{strategy => one_for_all, intensity => 10, period => 5},
-    ChildSpecs = [],
+    ChildSpecs = [#{
+        id => player_server_sup_sup,
+        start => {player_server_sup_sup, start_link, []},
+        type => supervisor,
+        modules => [player_server_sup_sup]
+    },
+    #{}],
     {ok, {SupFlags, ChildSpecs}}.
-

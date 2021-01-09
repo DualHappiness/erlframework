@@ -8,7 +8,6 @@
 -behaviour(supervisor).
 
 -export([start_link/0]).
-
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
@@ -26,10 +25,12 @@ start_link() ->
 %%                  type => worker(),       % optional
 %%                  modules => modules()}   % optional
 init([]) ->
-    SupFlags = #{strategy => one_for_all,
-                 intensity => 0,
-                 period => 1},
-    ChildSpecs = [],
+    SupFlags = #{strategy => one_for_one, intensity => 5, period => 10},
+    ChildSpecs = [#{id => player_sup,
+                    start => {player_sup, start_link, []},
+                    type => supervisor,
+                    modules => [player_sup]}],
     {ok, {SupFlags, ChildSpecs}}.
+
 
 %% internal functions

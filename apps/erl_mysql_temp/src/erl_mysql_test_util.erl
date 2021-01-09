@@ -14,11 +14,11 @@ connect() ->
 login_msg() ->
     #acc_login_c2s{platform = <<"dev">>,
                    game_account_id = <<"123123">>,
-                   game_account_sign = "",
-                   channel_open_id = "",
-                   channel_param = "",
+                   game_account_sign = "1",
+                   channel_open_id = "1",
+                   channel_param = "1",
                    mode = 1,
-                   vsn = ""}.
+                   vsn = "1"}.
 
 login_id() ->
     demo_proto_convert:id_mf_convert({acc, login}, id).

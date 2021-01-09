@@ -7,4 +7,8 @@
 -define(ACCOUNT_STATUS_FINISH_CREATE, 2).   % 创建角色
 -define(ACCOUNT_STATUS_ENTER, 3).           % 进入游戏
 
+-define(PLATFORM_MAP, #{
+    dev => 0
+}).
+
 -endif.

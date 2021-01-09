@@ -8,11 +8,17 @@
     <table name="account">
         <field name="accname" type="string64" is_key="true"/>
         <field name="platform" type="int16" is_key="true"/>
-        <field name="player_id" type="int64"/>
         <field name="status" type="int8"/>
         <field name="create_time" type="int16"/>
         <field name="create_ip" type="string16"/>
         <field name="token" type="string32"/>
+    </table>
+
+    <!-- 由于不想跨node共用数据表 所以account to playerid 单独当了一张表 -->
+    <table name="account2player">
+        <field name="accname" type="string64" is_key="true"/>
+        <field name="platform" type="int16" is_key="true"/>
+        <field name="player_id" type="int64"/>
 
         <index name="player_id">
             <indexfield name="player_id"/>
@@ -24,8 +30,6 @@
         <field name="sex" type="int8"/>
         <field name="name" type="string32"/>
         <field name="head_img" type="string64"/>
-        <field name="accname" type="string64"/>
-        <field name="platform" type="int16"/>
         <field name="last_login_ip" type="string16"/>
     </table>
 </tables>
