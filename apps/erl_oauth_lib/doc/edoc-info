@@ -1,4 +1,0 @@
-%% encoding: UTF-8
-{application,erl_oauth_lib}.
-{modules,[erl_oauth_lib,erl_oauth_platform,erl_oauth_platform_dev,
-          erl_oauth_platfrom_error]}.
