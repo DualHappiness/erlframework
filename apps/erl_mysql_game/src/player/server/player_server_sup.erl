@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% @author dualwu
 %%% @doc
-%%% 
+%%%
 %%% @end
 %%% Created : 2021/01/09
 %%%-------------------------------------------------------------------
@@ -14,9 +14,10 @@
 
 -export([new_player/1]).
 
--spec start_link() -> {ok, pid()} |
-                      {error, {already_started, pid()}} |
-                      {error, Reason :: term()}.
+-spec start_link() ->
+    {ok, pid()}
+    | {error, {already_started, pid()}}
+    | {error, Reason :: term()}.
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
