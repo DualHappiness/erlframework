@@ -28,6 +28,18 @@ init([]) ->
             start => {player_server_sup_sup, start_link, []},
             type => supervisor,
             modules => [player_server_sup_sup]
+        },
+        #{
+            id => player_data_sup_sup,
+            start => {player_data_sup_sup, start_link, []},
+            type => supervisor,
+            modules => [player_data_sup_sup]
+        },
+        #{
+            id => gen_mod,
+            start => {gen_mod, start_link, []},
+            shutdown => 5000,
+            modules => [gen_mod]
         }
     ],
     {ok, {SupFlags, ChildSpecs}}.

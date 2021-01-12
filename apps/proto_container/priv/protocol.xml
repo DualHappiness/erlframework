@@ -8,6 +8,13 @@
         <code id="1" name="E_UNKNOWN" desc="未知错误" />
         <code id="5" name="E_FAILED" desc="失败" />
         <code id="6" name="E_NOT_SUPPORT_VSN" desc="新版本已经准备好，请重启应用哦~" />
+
+        <code id="1000" name="E_SYSTEM" desc="系统错误，请检查代码逻辑"/>
+
+        <code id="1001" name="E_PLAYER_ALREADY_CREATED" desc="角色已创建"/>
+        <code id="1002" name="E_PLAYER_NO_ROLE" desc="没有角色"/>
+        <code id="1003" name="E_PLAYER_ALREADY_ENTER" desc="重复的进入消息"/>
+        <code id="1004" name="E_PLAYER_KICK_BY_OTHER" desc="由于其他玩家登录，被踢下线"/>
     </error>
     <types desc="全局自定义类型列表">
         <type name="p_player" desc="玩家信息">
@@ -23,6 +30,14 @@
             <f t="uint64" name="count" desc="物品数量"/>
         </type>
     </types>
+    <section id="0" name="system" desc="全局信息">
+        <msg id="0" name="error" desc="协议错误码">
+            <s2c>
+                <f t="uint16" name="msgid" desc="协议id"/>
+                <f t="uint32" name="code" desc="错误码"/>
+            </s2c>
+        </msg>
+    </section>
     <section id="10" name="acc" desc="账户信息">
         <msg id="0" name="login" desc="用户登录">
             <c2s>
@@ -51,14 +66,7 @@
                 <f t ="uint64" name="id" desc="角色id"/>
             </s2c>
         </msg>
-        <msg id="3" name="create_with_params" desc="创建角色">
-            <c2s>
-                <f t="uint8" name="head" desc="头像Id" />
-                <f t="uint8" name="sex" desc="性别" />
-                <f t="string" name="name" desc="角色名字" />
-                <f t="string" name="params" desc="Json字符串" />
-            </c2s>
-        </msg>
+       
         <msg id="4" name="enter" desc="角色进入游戏">
             <c2s>
                 <f t ="uint64" name="id" desc="角色id"/>
@@ -85,34 +93,8 @@
                 <f t="uint16" name="code" desc="错误码(0成功,1失败)"/>
             </s2c>
         </msg>
-        <msg id="7" name="servertime" desc="获取服务器时间">
-            <c2s/>
-            <s2c>
-                <f t="uint32" name="time" desc="服务器时间"/>
-            </s2c>
-        </msg>
-        <msg id="10" name="ban" desc="账号被禁">
-            <s2c>
-                <f t="uint8" name="reason" desc="原因 1:账号 2:IP" />
-                <f t="uint32" name="end_time" desc="结束时间戳" />
-            </s2c>
-        </msg>
-        <msg id="11" name="maintain" desc="服务器维护">
-            <s2c>
-                <f t="uint16" name="state" desc="状态码1 维护中" />
-                <f t="string" name="desc" desc="描述" />
-            </s2c>
-        </msg>
-        <msg id="12" name="version" desc="版本信息">
-            <c2s>
-                <f t="string" name="vsn" desc="版本信息"/>
-            </c2s>
-            <s2c>
-                <f t="uint8" name="result" desc="是否支持"/>
-            </s2c>
-        </msg>
     </section>
-    <section id="201" name="friend_service" desc="社交服务协议">
+    <!-- <section id="201" name="friend_service" desc="社交服务协议">
         <!-- callback register -->
         <msg id="0" name="register" desc="">
             <s2c>
@@ -154,5 +136,5 @@
             </s2c>
             <c2s/>
         </msg>
-    </section>
+    </section> -->
 </protocol>

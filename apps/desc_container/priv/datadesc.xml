@@ -32,4 +32,9 @@
         <field name="head_img" type="string64"/>
         <field name="last_login_ip" type="string16"/>
     </table>
+
+    <table name="test">
+        <field name="key1" type="int64" is_key="true"/>
+        <field name="val1" type="int16"/>
+    </table>
 </tables>

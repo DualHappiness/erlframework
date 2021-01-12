@@ -83,3 +83,18 @@ PRIMARY KEY (`id`)
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+--
+-- Table structure for table `test`
+--
+
+DROP TABLE IF EXISTS `test`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test` (
+    `key1` bigint NOT NULL,
+    `val1` int NOT NULL,
+PRIMARY KEY (`key1`) 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+

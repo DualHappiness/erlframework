@@ -18,9 +18,7 @@
 -type reply(Term, State) :: {reply, Term, State} | {reply, Term, State, hibernate_term()}.
 -type noreply(State) :: {noreply, State} | {noreply, State, hibernate_term()}.
 
--type id() :: term().
-
--export_type([id/0]).
+-type id() :: player:id().
 
 -compile({no_auto_import, [{get, 1}]}).
 

@@ -1,7 +1,7 @@
 -ifndef(DATADESC_HRL).
 -define(DATADESC_HRL, true).
 
--define(TABLE_NAMES, [rank, account, account2player, player]).
+-define(TABLE_NAMES, [rank, account, account2player, player, test]).
 -record(rank_keys, {player_id, weapon_id}).
 -record(rank_values, {rank}).
 -record(rank_all, {player_id, weapon_id, rank}).
@@ -17,6 +17,10 @@
 -record(player_keys, {id}).
 -record(player_values, {sex, name, head_img, last_login_ip}).
 -record(player_all, {id, sex, name, head_img, last_login_ip}).
+
+-record(test_keys, {key1}).
+-record(test_values, {val1}).
+-record(test_all, {key1, val1}).
 
 
 -ifndef(DATADESC_NOIMPORT).

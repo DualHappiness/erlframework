@@ -24,6 +24,10 @@ fields_(player_keys) ->
     record_info(fields, player_keys);
 fields_(player_values) ->
     record_info(fields, player_values);
+fields_(test_keys) ->
+    record_info(fields, test_keys);
+fields_(test_values) ->
+    record_info(fields, test_values);
 fields_(_V) ->
     ?ERROR("wrong record: ~p~n", [_V]).
 
@@ -49,6 +53,11 @@ fields_str_(player_keys) ->
     ["id"];
 fields_str_(player_values) ->
     ["sex", "name", "head_img", "last_login_ip"];
+
+fields_str_(test_keys) ->
+    ["key1"];
+fields_str_(test_values) ->
+    ["val1"];
 fields_str_(_V) ->
     ?ERROR("wrong record: ~p~n", [_V]).
 

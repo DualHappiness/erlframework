@@ -1,4 +1,4 @@
--module(erl_mysql_datatable_loader).
+-module(loader_template).
 
 -export([gen_loader/1]).
 
@@ -32,7 +32,7 @@ gen_loader(Mod) ->
         "    datatable_loader:load(?MODULE, Key),\n"
         "   not ?MATCHES(undefined, datatable_account:get(Key)).\n",
 
-    FileNameBase = io_lib:format("erl_mysql_datatable_db_~p", [Mod]),
+    FileNameBase = io_lib:format("db_~p", [Mod]),
     CodeStr = io_lib:format(unicode:characters_to_binary(Template), [
         FileNameBase
         | lists:duplicate(4, Mod)

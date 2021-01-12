@@ -12,9 +12,7 @@
 -type accname() :: term().
 -type platform() :: term().
 
-%% TODO loader 通用实现
 %% 正好卡在logger 和 table 之间 所以现在都是放在项目中
-%%
 -spec load(any()) -> ok.
 load(Key) ->
     Db = dataloggersql_helper:get_db(),

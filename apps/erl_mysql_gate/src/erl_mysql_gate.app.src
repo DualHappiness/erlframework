@@ -1,5 +1,5 @@
 {application, erl_mysql_gate, [
-    {description, ""},
+    {description, "gate"},
     {vsn, "1.0.0"},
     {applications, [
         kernel,

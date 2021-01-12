@@ -15,18 +15,23 @@
 -type reply(Term, State) :: {reply, Term, State} | {reply, Term, State, hibernate_term()}.
 -type noreply(State) :: {noreply, State} | {noreply, State, hibernate_term()}.
 
--export([start_link/0]).
+-type id() :: player:id().
+
+-include_lib("desc_container/include/datadesc.hrl").
+-include_lib("eunit/include/eunit.hrl").
+
+-export([start_link/1]).
 -export([transaction/2, read_transaction/1]).
 
 -export([init/1]).
 -export([handle_cast/2, handle_call/3]).
 
--spec start_link() ->
+-spec start_link(ID :: id()) ->
     {ok, pid()}
     | {error, {already_started, pid()}}
     | {error, Reason :: any()}.
-start_link() ->
-    gen_server:start_link(?MODULE, [], []).
+start_link(ID) ->
+    gen_server:start_link(?MODULE, [ID], []).
 
 -spec transaction(PidOrID, F) -> {ok, Ret} | {error, Reason} when
     PidOrID :: pid() | player_data_mgr:id(), F :: fun(() -> Ret), Ret :: term(), Reason :: term().
@@ -48,8 +53,11 @@ read_transaction(F) ->
     {ok, F()}.
 
 -spec init(Args :: [term()]) -> {ok, #state{}}.
-init([]) ->
-    %% TODO init all data
+init([ID]) ->
+    %% init player data
+    Ret = db_player:is_exist(#player_keys{id = ID}),
+    ?assertMatch(undefined, Ret),
+    %% TODO init player module data
     {ok, #state{}}.
 
 -spec handle_call(Msg, From, State) ->

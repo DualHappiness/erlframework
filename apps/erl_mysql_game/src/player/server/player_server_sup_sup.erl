@@ -27,7 +27,7 @@ init([]) ->
     [
         begin
             datatable:start([#datatable_declare{table = Table}]),
-            erl_mysql_datatable_loader:gen_loader(Table)
+            loader_template:gen_loader(Table)
         end
         || Table <- [account2player, player]
     ],

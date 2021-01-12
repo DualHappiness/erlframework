@@ -1,5 +1,5 @@
 {application, erl_mysql_demo, [
-    {description, ""},
+    {description, "gate, oauth and game"},
     {vsn, "1.0.0"},
     {applications, [
         kernel,

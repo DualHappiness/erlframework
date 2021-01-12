@@ -1,15 +1,13 @@
-{application, desc_container,
- [{description, "An OTP application"},
-  {vsn, "0.1.0"},
-  {registered, []},
-  {mod, {desc_container_app, []}},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {modules, []},
+{application, desc_container, [
+    {description, "datadesc container"},
+    {vsn, "1.0.0"},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {env, []},
+    {modules, []},
 
-  {licenses, ["Apache 2.0"]},
-  {links, []}
- ]}.
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.
