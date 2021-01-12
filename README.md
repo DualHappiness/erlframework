@@ -9,6 +9,8 @@ erl_mysql_demo
 - 通过自定义logger handler && logger filter 实现旧的警告功能
 - 打点相关
 - 操作跨服玩家数据
+- 旧的库也加上erlfmt
+
 
 Build
 -----

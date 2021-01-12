@@ -23,7 +23,7 @@ start_link() ->
 
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-    SupFlags = #{strategy => simple_one_for_one, intensity => 10, period => 5},
+    SupFlags = #{strategy => one_for_one, intensity => 10, period => 5},
     ChildSpecs = [],
     {ok, {SupFlags, ChildSpecs}}.
 

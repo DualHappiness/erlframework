@@ -16,6 +16,8 @@
 -type noreply(State) :: {noreply, State} | {noreply, State, hibernate_term()}.
 
 -export([start_link/0]).
+-export([transaction/2, read_transaction/1]).
+
 -export([init/1]).
 -export([handle_cast/2, handle_call/3]).
 
@@ -26,8 +28,28 @@
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
+-spec transaction(PidOrID, F) -> {ok, Ret} | {error, Reason} when
+    PidOrID :: pid() | player_data_mgr:id(), F :: fun(() -> Ret), Ret :: term(), Reason :: term().
+transaction(Pid, F) when is_pid(Pid) ->
+    gen_server:call(Pid, {transaction, F});
+transaction(ID, F) ->
+    case player_data_mgr:get(ID) of
+        undefined ->
+            {error, incorrect_id};
+        Pid ->
+            transaction(Pid, F)
+    end.
+
+%% !WARN 仅是为了方便跨节点同时取多个数据，减少rpc调用，禁止用来写数据
+-spec read_transaction(F) -> {ok, Ret} | {error, Reason} when
+    F :: fun(() -> Ret), Ret :: term(), Reason :: term().
+read_transaction(F) ->
+    %% TODO 增加开发时查找F中有没有写入的功能，可以考虑对所以相关数据加锁
+    {ok, F()}.
+
 -spec init(Args :: [term()]) -> {ok, #state{}}.
 init([]) ->
+    %% TODO init all data
     {ok, #state{}}.
 
 -spec handle_call(Msg, From, State) ->
@@ -43,6 +65,13 @@ when
     NewState :: #state{},
     Reason :: term(),
     Reply :: term().
+handle_call({transaction, F}, _From, State) ->
+    Ret =
+        case catch F() of
+            {error, _} = Err -> Err;
+            R -> {ok, R}
+        end,
+    {reply, Ret, State};
 handle_call(_Msg, _From, State) ->
     {reply, ok, State}.
 

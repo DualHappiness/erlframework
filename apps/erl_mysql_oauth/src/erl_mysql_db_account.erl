@@ -1,7 +1,7 @@
 -module(erl_mysql_db_account).
 
 -include_lib("eunit/include/eunit.hrl").
--include_lib("datadescsql_container/include/datadesc.hrl").
+-include_lib("desc_container/include/datadesc.hrl").
 -include_lib("erl_logger/include/logger.hrl").
 -include_lib("erl_mysql_demo/include/project.hrl").
 -include_lib("pmod/include/pmod.hrl").
@@ -46,7 +46,6 @@ create(AccName, Platform, IP, Token) ->
     Now = erlang:system_time(seconds),
     Key = #account_keys{accname = AccName, platform = maps:get(Platform, ?PLATFORM_MAP)},
     Value = #account_values{
-        player_id = 0,
         status = ?ACCOUNT_STATUS_INIT,
         create_time = Now,
         create_ip = inet:ntoa(IP),

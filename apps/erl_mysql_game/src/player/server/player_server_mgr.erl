@@ -11,6 +11,7 @@
 
 -record(state, {tab}).
 
+-include_lib("erl_logger/include/logger.hrl").
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("proto_container/include/demo_proto_acc.hrl").
 -include_lib("erl_oauth_lib/include/erl_oauth_lib.hrl").
@@ -30,7 +31,7 @@
     | {error, {already_started, pid()}}
     | {error, Reason :: any()}.
 start_link(Tab) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], [Tab]).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [Tab], []).
 
 -spec init(Args :: [term()]) -> {ok, #state{}}.
 init([Tab]) ->
@@ -49,15 +50,27 @@ when
     NewState :: #state{},
     Reason :: term(),
     Reply :: term().
-handle_call(
+handle_call(Msg, From, State) ->
+    try
+        safe_handle_call(Msg, From, State)
+    catch
+        E:R:T ->
+            ?ERROR("~p, handle call error: ", [?MODULE, {E, R, T}]),
+            {reply, {error, system}, State}
+    end.
+
+safe_handle_call(
     {create, {#auth_ret{platform = Platform, accname = AccName}, #acc_create_c2s{}, Client}, Args},
     _From,
     State
 ) ->
+    % case datatable_account2player
     IP = proplists:get_value(ip, Args),
     ID = player_id_server:get_new(),
+    {ok, Pid} = player_data_mgr:new(ID),
+    % player_data:transaction(Pid, F)
     {reply, {ok, ok}, State};
-handle_call({enter, #auth_ret{accsign = Sign}, EnterMsg, Client}, _From, State) ->
+safe_handle_call({enter, #auth_ret{accsign = Sign}, EnterMsg, Client}, _From, State) ->
     %% double check
     Ret =
         case ets:lookup(?MODULE, Sign) of
@@ -71,8 +84,9 @@ handle_call({enter, #auth_ret{accsign = Sign}, EnterMsg, Client}, _From, State) 
                 pass
         end,
     {reply, Ret, State};
-handle_call(_Msg, _From, State) ->
-    {reply, ok, State}.
+safe_handle_call(_Msg, _From, State) ->
+    ?INFO("~p, handle unknow msg: ~p~n", [?MODULE, _Msg]),
+    {reply, {error, unknow_msg}, State}.
 
 -spec handle_cast(Msg, State) -> noreply(NewState) | {stop, Reason, NewState} when
     Msg ::
@@ -86,7 +100,7 @@ handle_cast(_Msg, State) ->
 -spec route_msg(msg(), Args :: proplists:proplist()) ->
     {ok, Ret :: term()}
     | {error, Reason :: term()}.
-route_msg(Msg = {AuthRet = #auth_ret{accsign = Sign}, {Mod, Record}, From}, Args) ->
+route_msg(Msg = {#auth_ret{accsign = Sign}, {Mod, Record}, From}, Args) ->
     case ets:lookup(?MODULE, Sign) of
         [{_, {From, PlayerServer}}] ->
             %% just route
@@ -99,9 +113,9 @@ route_msg(Msg = {AuthRet = #auth_ret{accsign = Sign}, {Mod, Record}, From}, Args
 -spec route_call(msg(), Args :: proplists:proplist()) ->
     {ok, Ret :: term()}
     | {error, Reason :: term()}.
-route_call(Msg = {_AuthRet, {_Mod, #acc_create_c2s{}}, From}, Args) ->
+route_call(Msg = {_AuthRet, {_Mod, #acc_create_c2s{}}, _From}, Args) ->
     gen_server:call(?MODULE, {create, Msg, Args});
-route_call(Msg = {_AuthRet, {_Mod, #acc_enter_c2s{}}, From}, Args) ->
+route_call(Msg = {_AuthRet, {_Mod, #acc_enter_c2s{}}, _From}, Args) ->
     gen_server:call(?MODULE, {enter, Msg, Args});
 route_call(_Msg, _Args) ->
     {error, need_enter_or_reenter}.

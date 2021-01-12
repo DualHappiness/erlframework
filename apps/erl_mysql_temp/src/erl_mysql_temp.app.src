@@ -1,14 +1,14 @@
-{application, erl_mysql_temp,
- [{description, "dynamic code container"},
-  {vsn, "1.0.0"},
-  {applications,
-   [kernel,
-    stdlib,
-    proto_container
-   ]},
-  {env,[]},
-  {modules, [ ]},
+{application, erl_mysql_temp, [
+    {description, "dynamic code container"},
+    {vsn, "1.0.0"},
+    {applications, [
+        kernel,
+        stdlib,
+        proto_container
+    ]},
+    {env, []},
+    {modules, []},
 
-  {licenses, ["Apache 2.0"]},
-  {links, []}
- ]}.
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

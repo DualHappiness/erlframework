@@ -1,21 +1,24 @@
-{application, erl_mysql_game,
- [{description, ""},
-  {vsn, "1.0.0"},
-  {registered, [
-      player_id_server,
-      player_server_sup,
-      player_server_mgr,
-      player_data_sup,
-      player_data_mgr
-  ]},
-  {mod, {erl_mysql_game_app, []}},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {modules, []},
+{application, erl_mysql_game, [
+    {description, ""},
+    {vsn, "1.0.0"},
+    {registered, [
+        player_id_server,
+        player_server_sup,
+        player_server_mgr,
+        player_data_sup,
+        player_data_mgr
+    ]},
+    {mod, {erl_mysql_game_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        datatable,
+        dataloggersql,
+        desc_container
+    ]},
+    {env, []},
+    {modules, []},
 
-  {licenses, ["Apache 2.0"]},
-  {links, []}
- ]}.
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

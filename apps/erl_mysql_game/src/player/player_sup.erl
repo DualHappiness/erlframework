@@ -28,7 +28,6 @@ init([]) ->
             start => {player_server_sup_sup, start_link, []},
             type => supervisor,
             modules => [player_server_sup_sup]
-        },
-        #{}
+        }
     ],
     {ok, {SupFlags, ChildSpecs}}.
