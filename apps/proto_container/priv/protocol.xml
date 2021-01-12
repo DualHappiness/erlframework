@@ -137,4 +137,14 @@
             <c2s/>
         </msg>
     </section>
+    <section id="255" name="test" desc="test">
+        <msg id="1" name="part1" desc="">
+            <c2s>
+                <f t="uint64" name="value" desc=""/>
+            </c2s>
+            <s2c>
+                <f t="uint64" name="value" desc=""/>
+            </s2c>
+        </msg>
+    </section>
 </protocol>

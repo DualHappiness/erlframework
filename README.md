@@ -13,6 +13,7 @@ erl_mysql_demo
 - 多节点测试
 - 通过自定义logger handler && logger filter 实现旧的警告功能
 - 完善认证授权回传数据 完善建立角色数据
+- 便利性功能添加， 需要注意保持逻辑清晰
 - 打点相关
 - 操作跨服玩家数据
 - 旧的库也加上erlfmt
