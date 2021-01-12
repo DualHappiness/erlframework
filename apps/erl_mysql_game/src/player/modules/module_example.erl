@@ -1,6 +1,10 @@
--module(module_test).
+-module(module_example).
 
+-ifndef(TEST).
 -on_load(init/0).
+-endif.
+
+% -behaviour(gen_mod).
 
 -include_lib("erl_logger/include/logger.hrl").
 

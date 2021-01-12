@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% @author dualwu
 %%% @doc
-%%% 
+%%%
 %%% @end
 %%% Created : 2021/01/12
 %%%-------------------------------------------------------------------
@@ -14,6 +14,8 @@
 
 -behaviour(gen_server).
 
+-include("player.hrl").
+
 -record(state, {}).
 
 -type hibernate_term() :: timeout() | hibernate.
@@ -24,9 +26,24 @@
 -export([get_all_module/0]).
 -export([add_module/1, remove_module/1]).
 -export([register_handler/2, unregister_handler/1, find_handler/1]).
+-export([init_player_data/1, terminater_player_data/1]).
 
 -export([init/1]).
 -export([handle_cast/2, handle_call/3]).
+
+-callback init() -> ok.
+-callback init_player_data(ID :: player:id()) -> ok.
+-callback terminate_player_data(ID :: player:id()) -> ok.
+
+-type mod_ret() :: {ok, #player{}} | {error, Reason :: term()}.
+-type mod_reply() :: {ok, Reply :: term(), #player{}} | {error, Reason :: term()}.
+
+-callback handle_c2s(player_server_mgr:msg(), #player{}) -> mod_ret().
+-callback handle_s2s_call(term(), #player{}) -> mod_reply().
+-callback handle_s2s_cast(term(), #player{}) -> mod_ret().
+
+%% TODO remote call/cast
+-optional_callbacks([init/0, init_player_data/1, terminate_player_data/1]).
 
 -spec start_link() ->
     {ok, pid()}
@@ -47,7 +64,7 @@ get_all_module() ->
     [list_to_atom(Mod) || {Mod = "module" ++ _, _Path, _Loaded} <- code:all_available()].
 
 add_module(Mod) ->
-    ets:insert(?MODULE, {mod, Mod}).
+    ets:insert(?MODULE, {{mod, Mod}, Mod}).
 
 remove_module(Mod) ->
     ets:delete(?MODULE, {mod, Mod}).
@@ -64,6 +81,27 @@ find_handler({Section, _Part}) ->
         [] -> {error, no_handler};
         [{_, Mod}] -> {ok, Mod}
     end.
+
+init_player_data(ID) ->
+    [
+        case erlang:function_exported(Mod, init_player_data, 1) of
+            false -> pass;
+            true -> Mod:init_player_data(ID)
+        end
+        || [Mod] <- ets:match(?MODULE, {{mod, '$1'}, '_'})
+    ],
+    ok.
+
+%% 单服应该最多也就百万的数据所以没考虑过卸载
+terminater_player_data(ID) ->
+    [
+        case erlang:function_exported(Mod, terminate_player_data, 1) of
+            false -> pass;
+            true -> Mod:terminate_player_data(ID)
+        end
+        || [Mod] <- ets:match(?MODULE, {{mod, '$1'}, '_'})
+    ],
+    ok.
 
 -spec handle_call(Msg, From, State) ->
     reply(Reply, NewState)

@@ -25,6 +25,8 @@
 -type reply(Term, State) :: {reply, Term, State} | {reply, Term, State, hibernate_term()}.
 -type noreply(State) :: {noreply, State} | {noreply, State, hibernate_term()}.
 
+-export_type([msg/0]).
+
 -export([start_link/1]).
 -export([init/1]).
 -export([handle_cast/2, handle_call/3]).
@@ -69,7 +71,9 @@ handle_call(Msg, From, State) ->
 
 %% 模块内发送错误码可以简化为throw 业务流程上出于明确过程的考虑 采用的是手动发送的方式
 safe_handle_call(
-    {create, {#auth_ret{platform = Platform, accname = AccName}, #acc_create_c2s{}, _Client}, Args},
+    {create,
+        {#auth_ret{platform = Platform, accname = AccName}, {_Mod, #acc_create_c2s{}}, _Client},
+        Args},
     _From,
     State
 ) ->
@@ -79,6 +83,7 @@ safe_handle_call(
         true ->
             {reply, {error, ?E_PLAYER_ALREADY_CREATED}, State};
         false ->
+            ?DEBUG("args : ~p~n", [Args]),
             IP = proplists:get_value(ip, Args),
             ID = player_id_server:get_new(),
 
@@ -97,7 +102,7 @@ safe_handle_call(
             {reply, {ok, ok}, State}
     end;
 safe_handle_call(
-    {enter, AuthRet = #auth_ret{accsign = Sign}, {Mod, #acc_enter_c2s{}}, Client},
+    {enter, {AuthRet = #auth_ret{accsign = Sign}, {Mod, #acc_enter_c2s{}}, Client}, _Args},
     _From,
     State
 ) ->
@@ -117,7 +122,7 @@ safe_handle_call(
                 #account2player_values{player_id = ID} = datatable_account2player:get(Key),
                 DataRet = player_data_mgr:get_or_new(ID),
                 ?IF(?MATCHES({error, _}, DataRet), throw(DataRet), pass),
-                ServerRet = player_server_sup:new_player(ID),
+                ServerRet = player_server_sup:new_player(ID, Client),
                 ?IF(?MATCHES({error, _}, ServerRet), throw(ServerRet), pass),
                 %% TODO 需要测试无法正常监听关闭的
                 {ok, Pid} = ServerRet,
@@ -170,17 +175,17 @@ route_msg(Msg = {#auth_ret{accsign = Sign}, {Mod, _Record}, From}, Args) ->
     %% 根据route返回值决定消息回复 错误码之类的
     case RouteRet of
         {ok, noreply} ->
-            ok;
+            {ok, ok};
         {ok, {SendType, MsgRet}} ->
             proto_util:SendType(From, MsgRet),
-            ok;
+            {ok, ok};
         {error, Reason} when is_integer(Reason) ->
             {Section, Method} = demo_proto_convert:id_mf_convert(Mod, id),
             ErrMsgID = Section bsl 8 + Method,
-            MsgID = demo_proto_convert:id_mf_convert({system, error}, id),
-            Msg = #system_error_s2c{msgid = ErrMsgID, code = Reason},
-            proto_util:send_push(From, {MsgID, Msg}),
-            ok;
+            ID = demo_proto_convert:id_mf_convert({system, error}, id),
+            Body = #system_error_s2c{msgid = ErrMsgID, code = Reason},
+            proto_util:send_push(From, {ID, Body}),
+            {ok, ok};
         Other ->
             ?ERROR("unexpect route ret: ~p~n", [RouteRet]),
             {error, Other}

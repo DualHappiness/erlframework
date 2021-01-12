@@ -30,12 +30,12 @@ gen_loader(Mod) ->
         "%% ! 每一条数据使用前一定要确保检查过一次存在\n"
         "is_exist(Key) ->\n"
         "    datatable_loader:load(?MODULE, Key),\n"
-        "   not ?MATCHES(undefined, datatable_account:get(Key)).\n",
+        "    not ?MATCHES(undefined, datatable_~p:get(Key)).\n",
 
     FileNameBase = io_lib:format("db_~p", [Mod]),
     CodeStr = io_lib:format(unicode:characters_to_binary(Template), [
         FileNameBase
-        | lists:duplicate(4, Mod)
+        | lists:duplicate(5, Mod)
     ]),
     erl_dynamic:compile_and_load(FileNameBase ++ ".erl", CodeStr),
     ok.

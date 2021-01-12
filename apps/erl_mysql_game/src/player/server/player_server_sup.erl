@@ -12,7 +12,7 @@
 -export([start_link/0]).
 -export([init/1]).
 
--export([new_player/1]).
+-export([new_player/2]).
 
 -spec start_link() ->
     {ok, pid()}
@@ -27,11 +27,11 @@ init([]) ->
     ChildSpecs = [],
     {ok, {SupFlags, ChildSpecs}}.
 
--spec new_player(PlayerID :: integer()) -> {ok, pid()} | {error, Reason :: term()}.
-new_player(PlayerID) ->
+-spec new_player(PlayerID :: integer(), Client :: pid()) -> {ok, pid()} | {error, Reason :: term()}.
+new_player(PlayerID, Client) ->
     ChildSpec = #{
         id => {player_server, PlayerID},
-        start => {player_server, start_link, []}
+        start => {player_server, start_link, [Client]}
     },
     case supervisor:start_child(?MODULE, ChildSpec) of
         {ok, Pid} -> {ok, Pid};

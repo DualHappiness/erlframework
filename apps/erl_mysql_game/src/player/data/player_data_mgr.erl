@@ -36,7 +36,7 @@ start_link(Tab) ->
 
 -spec new(ID :: id()) -> {ok, pid()} | {error, Reason :: term()}.
 new(ID) ->
-    ?assertMatch([], get(ID)),
+    ?assertMatch(undefined, get(ID)),
     gen_server:call(?MODULE, {new, ID}).
 
 -spec get(ID :: id()) -> undefined | pid().

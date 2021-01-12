@@ -1,4 +1,7 @@
 %% encoding: UTF-8
 {application,erl_mysql_game}.
-{modules,[erl_mysql_game_app,erl_mysql_game_msg_router,erl_mysql_game_msg_sup,
-          erl_mysql_game_sup,gen_mod,player_server,player_server_mgr]}.
+{modules,[env_util,erl_mysql_game_app,erl_mysql_game_sup,gen_mod,
+          loader_template,module_example,player,player_data,player_data_mgr,
+          player_data_sup,player_data_sup_sup,player_id_server,player_server,
+          player_server_mgr,player_server_sup,player_server_sup_sup,
+          player_sup,proto_util,servers_sup]}.

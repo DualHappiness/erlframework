@@ -12,6 +12,7 @@
     {applications, [
         kernel,
         stdlib,
+        erl_dynamic,
         datatable,
         dataloggersql,
         desc_container

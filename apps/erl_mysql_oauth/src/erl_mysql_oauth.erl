@@ -16,7 +16,7 @@ login_validate({_Code, {_Mod, Req}, _From}, Args) ->
     ?DEBUG("login validate: ~p~n", [{_Mod, Req}]),
     ?DEBUG("args: ~p~n", [Args]),
     IP = proplists:get_value(ip, Args),
-    ?assert(not ?MATCHES(undefine, IP)),
+    ?assert(not ?MATCHES(undefined, IP)),
     #acc_login_c2s{platform = Platform0, channel_open_id = OpenID} = Req,
     %% TODO 增加safe 防止攻击
     PlatformAuth = ?IF(

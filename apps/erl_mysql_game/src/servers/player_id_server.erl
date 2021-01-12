@@ -11,6 +11,7 @@
 
 -include_lib("erl_logger/include/logger.hrl").
 -include_lib("eunit/include/eunit.hrl").
+-include_lib("pmod/include/pmod.hrl").
 
 -record(state, {config_tab}).
 
@@ -68,7 +69,7 @@ handle_call(Msg, From, State) ->
     end.
 
 safe_handle_call(get_new, _From, State = #state{config_tab = Tab}) ->
-    {ok, ID} = dets:update_counter(Tab, ?MODULE, 1),
+    ID = dets:update_counter(Tab, ?MODULE, 1),
     {reply, ID, State};
 safe_handle_call(_Msg, _From, State) ->
     ?INFO("unknow msg from: ~p, msg is: ~p~n", [_From, _Msg]),

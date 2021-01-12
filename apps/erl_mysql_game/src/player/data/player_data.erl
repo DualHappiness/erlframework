@@ -34,7 +34,7 @@ start_link(ID) ->
     gen_server:start_link(?MODULE, [ID], []).
 
 -spec transaction(PidOrID, F) -> {ok, Ret} | {error, Reason} when
-    PidOrID :: pid() | player_data_mgr:id(), F :: fun(() -> Ret), Ret :: term(), Reason :: term().
+    PidOrID :: pid() | player:id(), F :: fun(() -> Ret), Ret :: term(), Reason :: term().
 transaction(Pid, F) when is_pid(Pid) ->
     gen_server:call(Pid, {transaction, F});
 transaction(ID, F) ->
@@ -55,9 +55,9 @@ read_transaction(F) ->
 -spec init(Args :: [term()]) -> {ok, #state{}}.
 init([ID]) ->
     %% init player data
-    Ret = db_player:is_exist(#player_keys{id = ID}),
-    ?assertMatch(undefined, Ret),
-    %% TODO init player module data
+    db_player:is_exist(#player_keys{id = ID}),
+    %% init player module data
+    gen_mod:init_player_data(ID),
     {ok, #state{}}.
 
 -spec handle_call(Msg, From, State) ->

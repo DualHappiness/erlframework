@@ -11,17 +11,21 @@
 
 <h1>Module player_server_mgr</h1>
 <ul class="index"><li><a href="#description">Description</a></li><li><a href="#types">Data Types</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>
-   description.
+       多读单写来保证性能和数据唯一.
 
 <p><b>Behaviours:</b> <a href="gen_server.html"><tt>gen_server</tt></a>.</p>
 <p><b>Authors:</b> dualwu.</p>
 
 <h2><a name="description">Description</a></h2>
-   description
+       多读单写来保证性能和数据唯一
 <h2><a name="types">Data Types</a></h2>
 
 <h3 class="typedecl"><a name="type-hibernate_term">hibernate_term()</a></h3>
 <p><tt>hibernate_term() = timeout() | hibernate</tt></p>
+
+
+<h3 class="typedecl"><a name="type-msg">msg()</a></h3>
+<p><tt>msg() = {#auth_ret{}, {Mod::term(), Record::term()}, From::pid()}</tt></p>
 
 
 <h3 class="typedecl"><a name="type-noreply">noreply()</a></h3>
@@ -36,7 +40,8 @@
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#handle_call-3">handle_call/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_cast-2">handle_cast/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#init-1">init/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#start_link-0">start_link/0</a></td><td></td></tr>
+<tr><td valign="top"><a href="#route_msg-2">route_msg/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#start_link-1">start_link/1</a></td><td></td></tr>
 </table>
 
 <h2><a name="functions">Function Details</a></h2>
@@ -61,9 +66,15 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="start_link-0">start_link/0</a></h3>
+<h3 class="function"><a name="route_msg-2">route_msg/2</a></h3>
 <div class="spec">
-<p><tt>start_link() -&gt; {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::any()}</tt><br></p>
+<p><tt>route_msg(Msg::<a href="#type-msg">msg()</a>, Args::<a href="proplists.html#type-proplist">proplists:proplist()</a>) -&gt; {ok, Ret::term()} | {error, Reason::term()}</tt><br></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="start_link-1">start_link/1</a></h3>
+<div class="spec">
+<p><tt>start_link(Tab::<a href="ets.html#type-tab">ets:tab()</a>) -&gt; {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::any()}</tt><br></p>
 <p> </p>
 </div>
 <hr>
