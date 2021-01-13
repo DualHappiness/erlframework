@@ -15,6 +15,9 @@
         <code id="1002" name="E_PLAYER_NO_ROLE" desc="没有角色"/>
         <code id="1003" name="E_PLAYER_ALREADY_ENTER" desc="重复的进入消息"/>
         <code id="1004" name="E_PLAYER_KICK_BY_OTHER" desc="由于其他玩家登录，被踢下线"/>
+        <code id="1005" name="E_PLAYER_NEED_ENTER" desc="未进入就在发后续消息"/>
+
+        <code id="2000" name="E_MOD_NO_HANDLER" desc="没有找到处理消息的module"/>
     </error>
     <types desc="全局自定义类型列表">
         <type name="p_player" desc="玩家信息">
@@ -144,6 +147,11 @@
             </c2s>
             <s2c>
                 <f t="uint64" name="value" desc=""/>
+            </s2c>
+        </msg>
+        <msg id="2" name="part2" desc="">
+            <s2c>
+                <f t="string" name="msg" desc=""/>
             </s2c>
         </msg>
     </section>

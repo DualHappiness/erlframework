@@ -4,6 +4,7 @@
     {applications, [
         kernel,
         stdlib,
+        dataloggersql,
         erl_mysql_game,
         erl_mysql_gate,
         erl_mysql_oauth

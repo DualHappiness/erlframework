@@ -9,7 +9,7 @@
 
 -behaviour(gen_server).
 
--record(state, {tab}).
+-record(state, {tab, monitors :: map()}).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("erl_logger/include/logger.hrl").
@@ -25,7 +25,7 @@
 -export([start_link/1]).
 -export([new/1, get/1, get_or_new/1]).
 -export([init/1]).
--export([handle_cast/2, handle_call/3]).
+-export([handle_cast/2, handle_call/3, handle_info/2]).
 
 -spec start_link(Tab :: ets:tab()) ->
     {ok, pid()}
@@ -59,7 +59,8 @@ get_or_new(ID) ->
 
 -spec init(Args :: [term()]) -> {ok, #state{}}.
 init([Tab]) ->
-    {ok, #state{tab = Tab}}.
+    Monitors = maps:from_list([{monitor(process, Pid), {ID, Pid}} || {ID, Pid} <- ets:tab2list(Tab)]),
+    {ok, #state{tab = Tab, monitors = Monitors}}.
 
 -spec handle_call(Msg, From, State) ->
     reply(Reply, NewState)
@@ -88,12 +89,14 @@ safe_handle_call({new, ID}, _From, State) ->
         Pid when is_pid(Pid) ->
             {reply, {ok, Pid}, State};
         undefined ->
-            case player_data_sup:new_player_data(ID) of
+            case player_data_sup:new(ID) of
                 {error, _} = Err ->
                     {reply, Err, State};
                 {ok, Pid} ->
                     ets:insert(State#state.tab, {ID, Pid}),
-                    {reply, {ok, Pid}, State}
+                    Ref = monitor(process, Pid),
+                    NewMonitors = (State#state.monitors)#{Ref => {ID, Pid}},
+                    {reply, {ok, Pid}, State#state{monitors = NewMonitors}}
             end
     end;
 safe_handle_call(_Msg, _From, State) ->
@@ -108,3 +111,38 @@ safe_handle_call(_Msg, _From, State) ->
     NewState :: #state{}.
 handle_cast(_Msg, State) ->
     {noreply, State}.
+
+-spec handle_info(Info, State) -> noreply(NewState) | {stop, Reason, NewState} when
+    Info :: term(),
+    Reason :: term(),
+    State :: #state{},
+    NewState :: #state{}.
+handle_info({'DOWN', Ref, process, Pid, Reason}, State) 
+    when Reason =:= normal; Reason =:= shutdown ->
+    do_remove({Ref, Pid}, State);
+handle_info({'DOWN', Ref, process, Pid, _Reason}, State = #state{tab = Tab, monitors = Monitors}) ->
+    ?ERROR("player data down abnormal. Reason is :~p~n", [_Reason]),
+    case maps:get(Ref, Monitors, undefined) of
+        {ID, Pid} ->
+            %% ! 确保一定会成功
+            {ok, NewPid} = player_data_sup:new(ID),
+            ets:insert(Tab, {ID, NewPid}),
+            NewRef = monitor(process, NewPid),
+            NewMonitors = maps:put(NewRef, NewPid, maps:remove(Ref, Monitors)),
+            {noreply, State#state{monitors = NewMonitors}};
+        _ ->
+            {noreply, State}
+    end;
+handle_info(_Info, State) ->
+    ?ERROR("~p receive unknow info: ~p~n", [?MODULE, _Info]),
+    {noreply, State}.
+
+do_remove({Ref, Pid}, State = #state{tab = Tab, monitors = Monitors}) ->
+    case maps:get(Ref, Monitors, undefined) of
+        {ID, Pid} ->
+            ets:delete(Tab, ID),
+            NewMonitors = maps:remove(Ref, Monitors),
+            {noreply, State#state{monitors = NewMonitors}};
+        _ ->
+            {noreply, State}
+    end.

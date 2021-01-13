@@ -6,7 +6,8 @@
         player_server_sup,
         player_server_mgr,
         player_data_sup,
-        player_data_mgr
+        player_data_mgr,
+        player_id_server
     ]},
     {mod, {erl_mysql_game_app, []}},
     {applications, [
@@ -14,7 +15,6 @@
         stdlib,
         erl_dynamic,
         datatable,
-        dataloggersql,
         desc_container
     ]},
     {env, []},

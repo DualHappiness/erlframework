@@ -13,7 +13,7 @@
 <ul class="index"><li><a href="#description">Description</a></li><li><a href="#types">Data Types</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>.
 
 <p><b>Behaviours:</b> <a href="gen_server.html"><tt>gen_server</tt></a>.</p>
-<p><b>This module defines the <tt>gen_mod</tt> behaviour.</b><br> Required callback functions: <tt>handle_c2s/2</tt>, <tt>handle_s2s_call/2</tt>, <tt>handle_s2s_cast/2</tt>.<br> Optional callback functions: <tt>init/0</tt>, <tt>init_player_data/1</tt>, <tt>terminate_player_data/1</tt>.</p>
+<p><b>This module defines the <tt>gen_mod</tt> behaviour.</b><br> Required callback functions: <tt>handle_c2s/3</tt>, <tt>handle_s2s_call/2</tt>, <tt>handle_s2s_cast/2</tt>.<br> Optional callback functions: <tt>init/0</tt>, <tt>init_data/1</tt>, <tt>terminate_data/1</tt>, <tt>init_player/1</tt>, <tt>terminate_player/1</tt>, <tt>handle_remote_call/1</tt>, <tt>handle_remote_cast/1</tt>.</p>
 <p><b>Authors:</b> dualwu.</p>
 
 <h2><a name="description">Description</a></h2>
@@ -24,8 +24,20 @@
 <p><tt>hibernate_term() = timeout() | hibernate</tt></p>
 
 
+<h3 class="typedecl"><a name="type-mod_reply">mod_reply()</a></h3>
+<p><tt>mod_reply() = {ok, Reply::term(), <a href="#type-player">player()</a>} | {error, Reason::term()}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-mod_ret">mod_ret()</a></h3>
+<p><tt>mod_ret() = {ok, <a href="#type-player">player()</a>} | {error, Reason::term()}</tt></p>
+
+
 <h3 class="typedecl"><a name="type-noreply">noreply()</a></h3>
 <p><tt>noreply(State) = {noreply, State} | {noreply, State, <a href="#type-hibernate_term">hibernate_term()</a>}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-player">player()</a></h3>
+<p><tt>player() = <a href="player.html#type-player">player:player()</a></tt></p>
 
 
 <h3 class="typedecl"><a name="type-reply">reply()</a></h3>
@@ -36,14 +48,19 @@
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#add_module-1">add_module/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#find_handler-1">find_handler/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#get_all_module-0">get_all_module/0</a></td><td></td></tr>
+<tr><td valign="top"><a href="#handle_c2s-3">handle_c2s/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_call-3">handle_call/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_cast-2">handle_cast/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#handle_s2s_call-3">handle_s2s_call/3</a></td><td></td></tr>
+<tr><td valign="top"><a href="#handle_s2s_cast-3">handle_s2s_cast/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#init-1">init/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#init_player_data-1">init_player_data/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#init_data-1">init_data/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#init_player-1">init_player/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#register_handler-2">register_handler/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#remove_module-1">remove_module/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#start_link-0">start_link/0</a></td><td></td></tr>
-<tr><td valign="top"><a href="#terminater_player_data-1">terminater_player_data/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#terminate_data-1">terminate_data/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#terminate_player-1">terminate_player/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#unregister_handler-1">unregister_handler/1</a></td><td></td></tr>
 </table>
 
@@ -67,6 +84,12 @@
 <p> </p>
 </div>
 
+<h3 class="function"><a name="handle_c2s-3">handle_c2s/3</a></h3>
+<div class="spec">
+<p><tt>handle_c2s(X1::<a href="player_server_mgr.html#type-msg">player_server_mgr:msg()</a>, Args::term(), Player::<a href="#type-player">player()</a>) -&gt; <a href="#type-mod_reply">mod_reply()</a></tt><br></p>
+<p> </p>
+</div>
+
 <h3 class="function"><a name="handle_call-3">handle_call/3</a></h3>
 <div class="spec">
 <p><tt>handle_call(Msg, From, State) -&gt; <a href="#type-reply">reply</a>(Reply, NewState) | <a href="#type-noreply">noreply</a>(NewState) | {stop, Reason, Reply, NewState} | {stop, Reason, NewState}</tt>
@@ -81,15 +104,33 @@
 <p> </p>
 </div>
 
+<h3 class="function"><a name="handle_s2s_call-3">handle_s2s_call/3</a></h3>
+<div class="spec">
+<p><tt>handle_s2s_call(Section::term(), Args::term(), Player::<a href="#type-player">player()</a>) -&gt; <a href="#type-mod_reply">mod_reply()</a></tt><br></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="handle_s2s_cast-3">handle_s2s_cast/3</a></h3>
+<div class="spec">
+<p><tt>handle_s2s_cast(Section::term(), Args::term(), Player::<a href="#type-player">player()</a>) -&gt; <a href="#type-mod_ret">mod_ret()</a></tt><br></p>
+<p> </p>
+</div>
+
 <h3 class="function"><a name="init-1">init/1</a></h3>
 <div class="spec">
 <p><tt>init(Args::[term()]) -&gt; {ok, #state{}}</tt><br></p>
 <p> </p>
 </div>
 
-<h3 class="function"><a name="init_player_data-1">init_player_data/1</a></h3>
+<h3 class="function"><a name="init_data-1">init_data/1</a></h3>
 <div class="spec">
-<p><tt>init_player_data(ID) -&gt; any()</tt></p>
+<p><tt>init_data(ID) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="init_player-1">init_player/1</a></h3>
+<div class="spec">
+<p><tt>init_player(Player) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
@@ -111,9 +152,15 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="terminater_player_data-1">terminater_player_data/1</a></h3>
+<h3 class="function"><a name="terminate_data-1">terminate_data/1</a></h3>
 <div class="spec">
-<p><tt>terminater_player_data(ID) -&gt; any()</tt></p>
+<p><tt>terminate_data(ID) -&gt; any()</tt></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="terminate_player-1">terminate_player/1</a></h3>
+<div class="spec">
+<p><tt>terminate_player(Player) -&gt; any()</tt></p>
 <p> </p>
 </div>
 

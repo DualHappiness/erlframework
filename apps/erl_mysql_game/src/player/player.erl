@@ -1,5 +1,8 @@
 -module(player).
 
--type id() :: term().
+-include("player.hrl").
 
--export_type([id/0]).
+-type id() :: term().
+-type player() :: #player{}.
+
+-export_type([id/0, player/0]).

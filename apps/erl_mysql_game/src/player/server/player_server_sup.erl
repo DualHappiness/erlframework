@@ -23,18 +23,21 @@ start_link() ->
 
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-    SupFlags = #{strategy => one_for_one, intensity => 10, period => 5},
-    ChildSpecs = [],
+    SupFlags = #{strategy => simple_one_for_one, intensity => 10, period => 5},
+    ChildSpecs = [
+        #{
+            start => {player_server, start_link, []},
+            restart => temporary
+        }
+    ],
     {ok, {SupFlags, ChildSpecs}}.
 
 -spec new_player(PlayerID :: integer(), Client :: pid()) -> {ok, pid()} | {error, Reason :: term()}.
 new_player(PlayerID, Client) ->
-    ChildSpec = #{
-        id => {player_server, PlayerID},
-        start => {player_server, start_link, [Client]}
-    },
-    case supervisor:start_child(?MODULE, ChildSpec) of
+    case supervisor:start_child(?MODULE, [PlayerID, Client]) of
         {ok, Pid} -> {ok, Pid};
         {ok, Pid, _Info} -> {ok, Pid};
         {error, Reason} -> {error, Reason}
     end.
+
+% -spec get_children() -> 

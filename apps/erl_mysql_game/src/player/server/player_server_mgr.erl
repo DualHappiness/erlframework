@@ -9,7 +9,7 @@
 
 -behaviour(gen_server).
 
--record(state, {tab, monitors = #{}}).
+-record(state, {tab, id2pid_tab, monitors = #{}}).
 
 -include_lib("erl_logger/include/logger.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -21,16 +21,24 @@
 -include_lib("erl_mysql_demo/include/project.hrl").
 
 -type msg() :: {#auth_ret{}, {Mod :: term(), Record :: term()}, From :: pid()}.
+-type msg_ret() ::
+    {ok, noreply}
+    | {ok, {SendType :: send_push | send_merge, Ret :: term()}}
+    | {error, Reason :: term()}.
+
 -type hibernate_term() :: timeout() | hibernate.
 -type reply(Term, State) :: {reply, Term, State} | {reply, Term, State, hibernate_term()}.
 -type noreply(State) :: {noreply, State} | {noreply, State, hibernate_term()}.
 
--export_type([msg/0]).
+-export_type([msg/0, msg_ret/0]).
+
+-define(PLAYER_ID2PID_TAB, player_server_id2pid).
 
 -export([start_link/1]).
+-export([get_pid/1, route_msg/2]).
+
 -export([init/1]).
 -export([handle_cast/2, handle_call/3]).
--export([route_msg/2]).
 
 -spec start_link(Tab :: ets:tab()) ->
     {ok, pid()}
@@ -42,10 +50,27 @@ start_link(Tab) ->
 -spec init(Args :: [term()]) -> {ok, #state{}}.
 init([Tab]) ->
     Monitors = maps:from_list([
-        {monitor(process, Client), {Sign, Client}}
-        || [Sign, Client] <- ets:match(?MODULE, {'$1', {'$2', '_'}})
+        {{monitor(process, Client), client}, {Sign, Client}}
+        || [Sign, Client] <- ets:match(?MODULE, {{acc2player, '$1'}, {'$2', '_'}})
     ]),
+
+    % lists:foreach(fun({ID, Pid, }) ->, player_server_sup:)
+
     {ok, #state{tab = Tab, monitors = Monitors}}.
+
+-spec get_pid(player:id()) -> undefined | pid().
+get_pid(ID) ->
+    case ets:lookup(?PLAYER_ID2PID_TAB, ID) of
+        [] -> undefined;
+        [{_, Pid}] -> Pid
+    end.
+
+-spec get_acc_pid(Sign :: term()) -> undefined | {Client :: pid(), PlayerServer :: pid()}.
+get_acc_pid(Sign) ->
+    case ets:lookup(?MODULE, {acc2player, Sign}) of
+        [] -> undefined;
+        [{_, V}] -> V
+    end.
 
 -spec handle_call(Msg, From, State) ->
     reply(Reply, NewState)
@@ -107,8 +132,8 @@ safe_handle_call(
     State
 ) ->
     %% double check
-    case ets:lookup(?MODULE, Sign) of
-        [] ->
+    case get_acc_pid(Sign) of
+        undefined ->
             try
                 %% enter
                 #auth_ret{accname = AccName, platform = Platform} = AuthRet,
@@ -120,19 +145,25 @@ safe_handle_call(
                     throw({error, ?E_PLAYER_NO_ROLE})
                 ),
                 #account2player_values{player_id = ID} = datatable_account2player:get(Key),
+               
                 DataRet = player_data_mgr:get_or_new(ID),
                 ?IF(?MATCHES({error, _}, DataRet), throw(DataRet), pass),
                 ServerRet = player_server_sup:new_player(ID, Client),
                 ?IF(?MATCHES({error, _}, ServerRet), throw(ServerRet), pass),
                 %% TODO 需要测试无法正常监听关闭的
+
                 {ok, Pid} = ServerRet,
                 Ref = monitor(process, Client),
-                NewMonitors = maps:put(
-                    Ref,
-                    {Sign, Client},
-                    State#state.monitors
-                ),
-                ets:insert(?MODULE, {Sign, {Client, Pid}}),
+                NewMonitors = (State#state.monitors)#{
+                    Ref =>
+                        {Sign, Client}
+                },
+                begin 
+                    %% add related data
+                    ets:insert(?MODULE, {{acc2player, Sign}, {Client, Pid}}),
+                    ok
+                end,
+                
                 MsgID = demo_proto_convert:id_mf_convert(Mod, id),
                 Msg = #acc_enter_s2c{code = 0},
                 {reply, {ok, {send_push, {MsgID, Msg}}}, State#state{
@@ -141,9 +172,9 @@ safe_handle_call(
             catch
                 throw:Err -> {reply, Err, State}
             end;
-        [{_, {Client, _Pid}}] ->
+        {Client, _Pid} ->
             {reply, {error, ?E_PLAYER_ALREADY_ENTER}, State};
-        [{_, {Other, Pid}}] ->
+        {Other, Pid} ->
             %% todo do replace
             {reply, pass, State}
     end;
@@ -165,8 +196,8 @@ handle_cast(_Msg, State) ->
     | {error, Reason :: term()}.
 route_msg(Msg = {#auth_ret{accsign = Sign}, {Mod, _Record}, From}, Args) ->
     RouteRet =
-        case ets:lookup(?MODULE, Sign) of
-            [{_, {From, PlayerServer}}] ->
+        case get_acc_pid(Sign) of
+            {From, PlayerServer} ->
                 %% just route
                 player_server:route_msg(PlayerServer, Msg, Args);
             _ ->
@@ -199,4 +230,4 @@ route_call(Msg = {_AuthRet, {_Mod, #acc_create_c2s{}}, _From}, Args) ->
 route_call(Msg = {_AuthRet, {_Mod, #acc_enter_c2s{}}, _From}, Args) ->
     gen_server:call(?MODULE, {enter, Msg, Args});
 route_call(_Msg, _Args) ->
-    {error, need_enter_or_reenter}.
+    {error, ?E_PLAYER_NEED_ENTER}.

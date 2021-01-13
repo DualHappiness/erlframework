@@ -57,7 +57,7 @@ init([ID]) ->
     %% init player data
     db_player:is_exist(#player_keys{id = ID}),
     %% init player module data
-    gen_mod:init_player_data(ID),
+    gen_mod:init_data(ID),
     {ok, #state{}}.
 
 -spec handle_call(Msg, From, State) ->
