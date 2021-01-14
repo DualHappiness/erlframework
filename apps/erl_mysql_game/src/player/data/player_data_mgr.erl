@@ -117,8 +117,9 @@ handle_cast(_Msg, State) ->
     Reason :: term(),
     State :: #state{},
     NewState :: #state{}.
-handle_info({'DOWN', Ref, process, Pid, Reason}, State) 
-    when Reason =:= normal; Reason =:= shutdown ->
+handle_info({'DOWN', Ref, process, Pid, Reason}, State) when
+    Reason =:= normal; Reason =:= shutdown
+->
     do_remove({Ref, Pid}, State);
 handle_info({'DOWN', Ref, process, Pid, _Reason}, State = #state{tab = Tab, monitors = Monitors}) ->
     ?ERROR("player data down abnormal. Reason is :~p~n", [_Reason]),

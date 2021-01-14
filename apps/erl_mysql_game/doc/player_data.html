@@ -40,7 +40,7 @@
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#handle_call-3">handle_call/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_cast-2">handle_cast/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#init-1">init/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#read_transaction-1">read_transaction/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#read_transaction-2">read_transaction/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#start_link-1">start_link/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#transaction-2">transaction/2</a></td><td></td></tr>
 </table>
@@ -67,10 +67,10 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="read_transaction-1">read_transaction/1</a></h3>
+<h3 class="function"><a name="read_transaction-2">read_transaction/2</a></h3>
 <div class="spec">
-<p><tt>read_transaction(F) -&gt; {ok, Ret} | {error, Reason}</tt>
-<ul class="definitions"><li><tt>F = fun(() -&gt; Ret)</tt></li><li><tt>Ret = term()</tt></li><li><tt>Reason = term()</tt></li></ul></p>
+<p><tt>read_transaction(IDorPid, F) -&gt; {ok, Ret} | {error, Reason}</tt>
+<ul class="definitions"><li><tt>IDorPid = <a href="#type-id">id()</a> | pid()</tt></li><li><tt>F = fun(() -&gt; Ret)</tt></li><li><tt>Ret = term()</tt></li><li><tt>Reason = term()</tt></li></ul></p>
 <p> </p>
 </div>
 

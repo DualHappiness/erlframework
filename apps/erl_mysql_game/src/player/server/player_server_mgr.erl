@@ -9,7 +9,7 @@
 
 -behaviour(gen_server).
 
--record(state, {tab, id2pid_tab, monitors = #{}}).
+-record(state, {tab, id2pid_tab, monitors = #{}, pid2ref = #{}}).
 
 -include_lib("erl_logger/include/logger.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -38,7 +38,7 @@
 -export([get_pid/1, route_msg/2]).
 
 -export([init/1]).
--export([handle_cast/2, handle_call/3]).
+-export([handle_cast/2, handle_call/3, handle_info/2]).
 
 -spec start_link(Tab :: ets:tab()) ->
     {ok, pid()}
@@ -49,14 +49,19 @@ start_link(Tab) ->
 
 -spec init(Args :: [term()]) -> {ok, #state{}}.
 init([Tab]) ->
-    Monitors = maps:from_list([
-        {{monitor(process, Client), client}, {Sign, Client}}
-        || [Sign, Client] <- ets:match(?MODULE, {{acc2player, '$1'}, {'$2', '_'}})
+    %% 理论上 不要用tab2list 但数据都一样 用match 没啥必要
+    IDTab = ets:new(?PLAYER_ID2PID_TAB, [public, set, named_table, {read_concurrency, true}]),
+    {L1, L2} = lists:unzip([
+        begin
+            Ref = monitor(process, PlayerServer),
+            ets:insert(ID, PlayerServer),
+            {{Ref, {AccID, ID}}, {PlayerServer, Ref}}
+        end
+        || {AccID, ID, {_Client, PlayerServer}} <- ets:tab2list(Tab)
     ]),
-
-    % lists:foreach(fun({ID, Pid, }) ->, player_server_sup:)
-
-    {ok, #state{tab = Tab, monitors = Monitors}}.
+    Monitors = maps:from_list(L1),
+    Pid2Ref = maps:from_list(L2),
+    {ok, #state{tab = Tab, id2pid_tab = IDTab, monitors = Monitors, pid2ref = Pid2Ref}}.
 
 -spec get_pid(player:id()) -> undefined | pid().
 get_pid(ID) ->
@@ -65,11 +70,11 @@ get_pid(ID) ->
         [{_, Pid}] -> Pid
     end.
 
--spec get_acc_pid(Sign :: term()) -> undefined | {Client :: pid(), PlayerServer :: pid()}.
-get_acc_pid(Sign) ->
-    case ets:lookup(?MODULE, {acc2player, Sign}) of
+-spec get_acc_pid(AccID :: term()) -> undefined | {Client :: pid(), PlayerServer :: pid()}.
+get_acc_pid(AccID) ->
+    case ets:lookup(?MODULE, AccID) of
         [] -> undefined;
-        [{_, V}] -> V
+        [{_, _ID, V}] -> V
     end.
 
 -spec handle_call(Msg, From, State) ->
@@ -97,7 +102,7 @@ handle_call(Msg, From, State) ->
 %% 模块内发送错误码可以简化为throw 业务流程上出于明确过程的考虑 采用的是手动发送的方式
 safe_handle_call(
     {create,
-        {#auth_ret{platform = Platform, accname = AccName}, {_Mod, #acc_create_c2s{}}, _Client},
+        {#auth_ret{platform = Platform, accname = AccName}, {Mod, #acc_create_c2s{}}, _Client},
         Args},
     _From,
     State
@@ -124,59 +129,33 @@ safe_handle_call(
                     player_id = ID
                 })
             end),
-            {reply, {ok, ok}, State}
+            MsgID = demo_proto_convert:id_mf_convert(Mod, id),
+            Msg = #acc_create_s2c{id = ID},
+            {reply, {ok, {send_push, {MsgID, Msg}}}, State}
     end;
 safe_handle_call(
-    {enter, {AuthRet = #auth_ret{accsign = Sign}, {Mod, #acc_enter_c2s{}}, Client}, _Args},
+    {enter,
+        Msg = {#auth_ret{accname = AccName, platform = Platform}, {_Mod, #acc_enter_c2s{}}, Client},
+        _Args},
     _From,
     State
 ) ->
     %% double check
-    case get_acc_pid(Sign) of
+    case get_acc_pid({AccName, Platform}) of
         undefined ->
-            try
-                %% enter
-                #auth_ret{accname = AccName, platform = Platform} = AuthRet,
-                PlatformInt = maps:get(Platform, ?PLATFORM_MAP),
-                Key = #account2player_keys{accname = AccName, platform = PlatformInt},
-                ?IF(
-                    db_account2player:is_exist(Key),
-                    pass,
-                    throw({error, ?E_PLAYER_NO_ROLE})
-                ),
-                #account2player_values{player_id = ID} = datatable_account2player:get(Key),
-               
-                DataRet = player_data_mgr:get_or_new(ID),
-                ?IF(?MATCHES({error, _}, DataRet), throw(DataRet), pass),
-                ServerRet = player_server_sup:new_player(ID, Client),
-                ?IF(?MATCHES({error, _}, ServerRet), throw(ServerRet), pass),
-                %% TODO 需要测试无法正常监听关闭的
-
-                {ok, Pid} = ServerRet,
-                Ref = monitor(process, Client),
-                NewMonitors = (State#state.monitors)#{
-                    Ref =>
-                        {Sign, Client}
-                },
-                begin 
-                    %% add related data
-                    ets:insert(?MODULE, {{acc2player, Sign}, {Client, Pid}}),
-                    ok
-                end,
-                
-                MsgID = demo_proto_convert:id_mf_convert(Mod, id),
-                Msg = #acc_enter_s2c{code = 0},
-                {reply, {ok, {send_push, {MsgID, Msg}}}, State#state{
-                    monitors = NewMonitors
-                }}
-            catch
-                throw:Err -> {reply, Err, State}
-            end;
+            do_enter(Msg, State);
         {Client, _Pid} ->
             {reply, {error, ?E_PLAYER_ALREADY_ENTER}, State};
-        {Other, Pid} ->
-            %% todo do replace
-            {reply, pass, State}
+        {_Other, Pid} ->
+            #state{pid2ref = Pid2Ref0, monitors = Monitors0} = State,
+
+            Ref = maps:get(Pid, Pid2Ref0),
+            demonitor(Ref),
+            exit(Pid, ?E_PLAYER_KICK_BY_OTHER),
+            Pid2Ref1 = maps:remove(Pid, Pid2Ref0),
+            Monitors1 = maps:remove(Ref, Monitors0),
+
+            do_enter(Msg, State#state{pid2ref = Pid2Ref1, monitors = Monitors1})
     end;
 safe_handle_call(_Msg, _From, State) ->
     ?INFO("~p, handle unknow msg: ~p~n", [?MODULE, _Msg]),
@@ -191,12 +170,35 @@ safe_handle_call(_Msg, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+-spec handle_info(Info, State) -> noreply(NewState) | {stop, Reason, NewState} when
+    Info :: term(),
+    Reason :: term(),
+    State :: #state{},
+    NewState :: #state{}.
+handle_info(
+    {'DOWN', Ref, process, _Pid, _Reason},
+    State = #state{tab = Tab, id2pid_tab = IDTab, monitors = Monitors}
+) ->
+    NewMonitors =
+        case maps:get(Ref, Monitors, undefined) of
+            undefined ->
+                Monitors;
+            {Sign, ID} ->
+                ets:delete(Tab, Sign),
+                ets:delete(IDTab, ID),
+                maps:remove(Ref, Monitors)
+        end,
+    {noreply, State#state{monitors = NewMonitors}};
+handle_info(_Info, State) ->
+    ?ERROR("~p receive unknow info: ~p~n", [?MODULE, _Info]),
+    {noreply, State}.
+
 -spec route_msg(msg(), Args :: proplists:proplist()) ->
     {ok, Ret :: term()}
     | {error, Reason :: term()}.
-route_msg(Msg = {#auth_ret{accsign = Sign}, {Mod, _Record}, From}, Args) ->
+route_msg(Msg = {#auth_ret{accname = AccName, platform = Platform}, {Mod, _Record}, From}, Args) ->
     RouteRet =
-        case get_acc_pid(Sign) of
+        case get_acc_pid({AccName, Platform}) of
             {From, PlayerServer} ->
                 %% just route
                 player_server:route_msg(PlayerServer, Msg, Args);
@@ -231,3 +233,47 @@ route_call(Msg = {_AuthRet, {_Mod, #acc_enter_c2s{}}, _From}, Args) ->
     gen_server:call(?MODULE, {enter, Msg, Args});
 route_call(_Msg, _Args) ->
     {error, ?E_PLAYER_NEED_ENTER}.
+
+-spec do_enter(msg(), #state{}) -> reply(term(), #state{}).
+do_enter(
+    {#auth_ret{accname = AccName, platform = Platform}, {Mod, #acc_enter_c2s{}}, Client},
+    State = #state{tab = Tab, id2pid_tab = IDTab}
+) ->
+    try
+        AccID = {AccName, Platform},
+        %% enter
+        PlatformInt = maps:get(Platform, ?PLATFORM_MAP),
+        Key = #account2player_keys{accname = AccName, platform = PlatformInt},
+        ?IF(
+            db_account2player:is_exist(Key),
+            pass,
+            throw({error, ?E_PLAYER_NO_ROLE})
+        ),
+        #account2player_values{player_id = ID} = datatable_account2player:get(Key),
+
+        DataRet = player_data_mgr:get_or_new(ID),
+        ?IF(?MATCHES({error, _}, DataRet), throw(DataRet), pass),
+        ServerRet = player_server_sup:new_player(ID, Client),
+        ?IF(?MATCHES({error, _}, ServerRet), throw(ServerRet), pass),
+
+        {ok, Pid} = ServerRet,
+        Ref = monitor(process, Pid),
+        NewMonitors = (State#state.monitors)#{
+            Ref =>
+                {AccID, Client, Pid}
+        },
+        begin
+            %% add related data
+            ets:insert(Tab, {AccID, ID, {Client, Pid}}),
+            ets:insert(IDTab, {ID, Pid}),
+            ok
+        end,
+
+        MsgID = demo_proto_convert:id_mf_convert(Mod, id),
+        Msg = #acc_enter_s2c{code = 0},
+        {reply, {ok, {send_push, {MsgID, Msg}}}, State#state{
+            monitors = NewMonitors
+        }}
+    catch
+        throw:Err -> {reply, Err, State}
+    end.

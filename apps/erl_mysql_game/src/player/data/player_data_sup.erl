@@ -24,7 +24,9 @@ start_link() ->
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
     SupFlags = #{strategy => simple_one_for_one},
-    ChildSpecs = [#{start => {player_data, start_link, []}, restart => temporary}],
+    ChildSpecs = [
+        #{id => player_data, start => {player_data, start_link, []}, restart => temporary}
+    ],
     {ok, {SupFlags, ChildSpecs}}.
 
 -spec new(ID :: term()) -> {ok, pid()} | {error, Reason :: term()}.

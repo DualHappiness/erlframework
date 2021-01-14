@@ -1,2 +1,2 @@
 %% player session data
--record(player, {client}).
+-record(player, {id, client, data_pid = undefined, data_ref}).

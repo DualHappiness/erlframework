@@ -9,12 +9,12 @@ get_config_path() ->
     application:get_env(
         erl_mysql_game,
         config_path,
-        "./config/game_config.config"
+        "config/game_config.dets"
     ).
 
 -spec get_server_ids() -> [non_neg_integer()].
 get_server_ids() ->
-    application:get_env(erl_mysql_game, server_id, [0]).
+    application:get_env(erl_mysql_game, server_ids, [0]).
 
 -spec get_config_strategy() -> normal | force_init.
 get_config_strategy() ->

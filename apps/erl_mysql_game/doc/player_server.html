@@ -34,9 +34,11 @@
 <h2><a name="index">Function Index</a></h2>
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#handle_call-3">handle_call/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_cast-2">handle_cast/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#handle_info-2">handle_info/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#init-1">init/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#route_msg-3">route_msg/3</a></td><td></td></tr>
-<tr><td valign="top"><a href="#start_link-1">start_link/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#start_link-2">start_link/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#terminate-2">terminate/2</a></td><td></td></tr>
 </table>
 
 <h2><a name="functions">Function Details</a></h2>
@@ -55,6 +57,13 @@
 <p> </p>
 </div>
 
+<h3 class="function"><a name="handle_info-2">handle_info/2</a></h3>
+<div class="spec">
+<p><tt>handle_info(Info, State) -&gt; <a href="#type-noreply">noreply</a>(NewState) | {stop, Reason, NewState}</tt>
+<ul class="definitions"><li><tt>Info = term()</tt></li><li><tt>State = #player{}</tt></li><li><tt>Reason = term()</tt></li><li><tt>NewState = #player{}</tt></li></ul></p>
+<p> </p>
+</div>
+
 <h3 class="function"><a name="init-1">init/1</a></h3>
 <div class="spec">
 <p><tt>init(Args::[term()]) -&gt; {ok, #player{}}</tt><br></p>
@@ -67,9 +76,15 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="start_link-1">start_link/1</a></h3>
+<h3 class="function"><a name="start_link-2">start_link/2</a></h3>
 <div class="spec">
-<p><tt>start_link(Client::pid()) -&gt; {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::any()}</tt><br></p>
+<p><tt>start_link(ID::<a href="player.html#type-id">player:id()</a>, Client::pid()) -&gt; {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::any()}</tt><br></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="terminate-2">terminate/2</a></h3>
+<div class="spec">
+<p><tt>terminate(Reason::term(), Player::#player{}) -&gt; term()</tt><br></p>
 <p> </p>
 </div>
 <hr>

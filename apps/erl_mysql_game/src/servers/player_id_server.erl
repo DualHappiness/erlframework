@@ -94,6 +94,7 @@ init_player_id(Tab) ->
         false ->
             ServerID = lists:min(env_util:get_server_ids()),
             ID = max(get_max_id(), ServerID * 100_000_000 + env_util:get_player_id_start()),
+            ?INFO("init id: ~p~n", [{ServerID, ID}]),
             dets:insert(Tab, {?MODULE, ID})
     end.
 

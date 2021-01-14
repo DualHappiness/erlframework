@@ -26,6 +26,7 @@ init([]) ->
     SupFlags = #{strategy => simple_one_for_one, intensity => 10, period => 5},
     ChildSpecs = [
         #{
+            id => player_server,
             start => {player_server, start_link, []},
             restart => temporary
         }

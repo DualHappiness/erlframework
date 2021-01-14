@@ -21,12 +21,11 @@ start_link() ->
 
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-    SupFlags = #{strategy => one_for_all, intensity => 10, period => 5},
+    SupFlags = #{strategy => one_for_one, intensity => 10, period => 5},
     ChildSpecs = [
         #{
             id => player_id_server,
             start => {player_id_server, start_link, []},
-            shutdown => 5000,
             modules => [player_id_server]
         }
     ],
