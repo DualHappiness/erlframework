@@ -27,7 +27,8 @@ init([]) ->
     [
         begin
             datatable:start([#datatable_declare{table = Table}]),
-            loader_template:gen_loader(Table)
+            loader_template:gen_loader(Table),
+            ok
         end
         || Table <- [account2player, player]
     ],

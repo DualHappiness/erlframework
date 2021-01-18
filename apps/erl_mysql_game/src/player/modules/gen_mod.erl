@@ -57,7 +57,7 @@
 init() ->
     ets:new(?MODULE, [public, set, named_table, {read_concurrency, true}]),
     %% 利用on_load来实现init 这样热更的时候就会更简单
-    [Mod:module_info() || Mod <- get_all_module()],
+    % [Mod:module_info() || Mod <- get_all_module()],
     ok.
 
 get_all_module() ->

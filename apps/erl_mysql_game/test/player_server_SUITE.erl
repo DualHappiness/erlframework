@@ -39,6 +39,7 @@ all() ->
 
 init_per_suite(_Config) ->
     %% TODO 自动清理数据库
+    %% 测试总是强制退出没有flush数据 所以不用清
     ConfigPath = filename:join(code:priv_dir(?APPNAME), "test_config"),
     application:set_env(?APPNAME, config_path, ConfigPath, ?ENV_OPT),
     % ok = application:get_env(?APPNAME, config_path),
@@ -145,9 +146,10 @@ close_test(_Config) ->
         {Client, ID, Pid} = make_client(),
         player_server:stop(Pid, ?E_SYSTEM),
         receive
-            {'EXIT', Pid, {_, {_, #system_error_s2c{code = ?E_SYSTEM}}}} -> ok
+            {exit, {_, #system_error_s2c{code = ?E_SYSTEM}}} -> ok
         after 1000 -> throw(stop_error)
         end,
+        receive after 100 -> ok end,
         ?assertMatch(undefined, process_info(Client)),
         ?assertMatch(undefined, process_info(Pid)),
         ?assertMatch(undefined, player_server_mgr:get_pid(ID))
@@ -158,10 +160,11 @@ relogin_test(_Config) ->
     {Client1, ID, Pid1} = make_client(),
     {Client2, ID, Pid2} = make_client(),
     receive
-        {'EXIT', Pid1, {_, {_, #acc_relogin_s2c{}}}} -> ok
+        {exit, {_, #system_error_s2c{code = ?E_PLAYER_KICK_BY_OTHER}}} -> ok
     after 1000 -> throw(relogin_error)
     end,
 
+    receive after 100 -> ok end,
     ?assertMatch(undefined, process_info(Client1)),
     ?assertNotMatch(undefined, process_info(Client2)),
     ?assertMatch(undefined, process_info(Pid1)),
