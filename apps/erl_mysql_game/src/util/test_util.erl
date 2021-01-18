@@ -1,4 +1,4 @@
--module(player_server_SUITE).
+-module(test_util).
 
 -compile(export_all).
 -compile(nowarn_export_all).

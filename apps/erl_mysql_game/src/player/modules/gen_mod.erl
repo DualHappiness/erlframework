@@ -14,20 +14,11 @@
 
 -module(gen_mod).
 
--behaviour(gen_server).
-
 -include("player.hrl").
 
 -include_lib("proto_container/include/demo_proto_error_code.hrl").
 -include_lib("erl_logger/include/logger.hrl").
 
--record(state, {}).
-
--type hibernate_term() :: timeout() | hibernate.
--type reply(Term, State) :: {reply, Term, State} | {reply, Term, State, hibernate_term()}.
--type noreply(State) :: {noreply, State} | {noreply, State, hibernate_term()}.
-
--export([start_link/0]).
 -export([get_all_module/0]).
 -export([add_module/1, remove_module/1]).
 -export([register_handler/2, unregister_handler/1, find_handler/1]).
@@ -35,8 +26,7 @@
 -export([init_player/1, terminate_player/1]).
 -export([handle_c2s/3, handle_s2s_call/3, handle_s2s_cast/3]).
 
--export([init/1]).
--export([handle_cast/2, handle_call/3]).
+-export([init/0]).
 
 -type id() :: player:id().
 -type player() :: player:player().
@@ -47,7 +37,7 @@
 -callback init_player(player()) -> player().
 -callback terminate_player(player()) -> player().
 
--optional_callbacks([init/0, init_data/1, terminate_data/1, init_player/1, terminate_player/1]).
+-optional_callbacks([init_data/1, terminate_data/1, init_player/1, terminate_player/1]).
 
 -type mod_ret() :: {ok, player()} | {error, Reason :: term()}.
 -type mod_reply() :: {ok, Reply :: term(), player()} | {error, Reason :: term()}.
@@ -57,28 +47,18 @@
 -callback handle_c2s({MsgID :: term(), Record :: term()}, Args :: proplists:proplist(), player()) ->
     mod_reply().
 
--callback handle_s2s_call(term(), player()) -> mod_reply().
--callback handle_s2s_cast(term(), player()) -> mod_ret().
-
 %% TODO remote call/cast
 -callback handle_remote_call(term()) -> {ok, Reply :: term()} | {error, Reason :: term()}.
 -callback handle_remote_cast(term()) -> ok | {error, Reason :: term()}.
 
 -optional_callbacks([handle_remote_call/1, handle_remote_cast/1]).
 
--spec start_link() ->
-    {ok, pid()}
-    | {error, {already_started, pid()}}
-    | {error, Reason :: any()}.
-start_link() ->
-    gen_server:start_link(?MODULE, [], []).
-
--spec init(Args :: [term()]) -> {ok, #state{}}.
-init([]) ->
+-spec init() -> ok.
+init() ->
     ets:new(?MODULE, [public, set, named_table, {read_concurrency, true}]),
     %% 利用on_load来实现init 这样热更的时候就会更简单
     [Mod:module_info() || Mod <- get_all_module()],
-    {ok, #state{}}.
+    ok.
 
 get_all_module() ->
     %% mod 有系统开头的文件 虽然不会有啥影响 但还是区分开比较好
@@ -207,30 +187,3 @@ handle_s2s_cast(Section, Args, Player) ->
                     {error, {E, R, T}}
             end
     end.
-
--spec handle_call(Msg, From, State) ->
-    reply(Reply, NewState)
-    | noreply(NewState)
-    | {stop, Reason, Reply, NewState}
-    | {stop, Reason, NewState}
-when
-    Msg :: term(),
-    From :: {pid(), Tag},
-    Tag :: term(),
-    State :: #state{},
-    NewState :: #state{},
-    Reason :: term(),
-    Reply :: term().
-handle_call(_Msg, _From, State) ->
-    {reply, ok, State}.
-
--spec handle_cast(Msg, State) ->
-    noreply(NewState)
-    | {stop, Reason, NewState}
-when
-    Msg :: term(),
-    Reason :: term(),
-    State :: #state{},
-    NewState :: #state{}.
-handle_cast(_Msg, State) ->
-    {noreply, State}.

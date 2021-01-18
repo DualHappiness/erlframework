@@ -9,7 +9,7 @@ erl_mysql_demo
 
 
 ## TODO LIST
-- gen_mod 功能
+- ~~gen_mod 功能~~
 - 单节点测试
 - gen_mod remote call
 - 多节点测试
@@ -26,6 +26,9 @@ erl_mysql_demo
 
 ## FIXME
 - 协议以来由于include字符串不能用宏拼接 所以现在都是写死的 有点尴尬
+- ~~暂未实现s2s_cxxx 感觉定位还是有点尴尬,对于自身 应该是直接调用模块功能 或者依赖异步事件~~
+  ~~对于他人则有可能变成一个remote call/cast 和真正的remote call/cast定位有点模糊 如果要只和本服人共享数据 那应该通过统一的server才能保证安全可靠~~
+
 
 Build
 -----

@@ -8,7 +8,7 @@ gen_loader(Mod) ->
         "-include_lib(\"eunit/include/eunit.hrl\").\n"
         "-include_lib(\"desc_container/include/datadesc.hrl\").\n"
         "-include_lib(\"erl_logger/include/logger.hrl\").\n"
-        "-include_lib(\"pmod/include/pmod.hrl\").\n"
+        "-include_lib(\"pmod_transform/include/pmod.hrl\").\n"
         "\n"
         "-export([load/1, is_exist/1]).\n"
         "\n"

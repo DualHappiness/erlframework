@@ -22,6 +22,7 @@
 
 -export([start_link/2]).
 -export([route_msg/3]).
+-export([stop/2]).
 
 -export([init/1]).
 -export([handle_cast/2, handle_call/3, handle_info/2]).
@@ -44,6 +45,10 @@ init([ID, Client]) ->
 -spec route_msg(pid(), player_server_mgr:msg(), term()) -> player_server_mgr:msg_ret().
 route_msg(Pid, Msg, Args) ->
     gen_server:call(Pid, {route_msg, Msg, Args}).
+
+-spec stop(pid(), Reason :: term()) -> ok.
+stop(Pid, Reason) ->
+    gen_server:cast(Pid, {stop, Reason}).
 
 % -spec s2s_call(IDorPid :: non_neg_integer() | pid(), Section :: term(), Args :: term()) -> term().
 % s2s_call(ID) ->
@@ -79,6 +84,8 @@ when
     Reason :: term(),
     State :: #player{},
     NewState :: #player{}.
+handle_cast({stop, Reason}, State) ->
+    {stop, Reason, State};
 handle_cast(_Msg, State) ->
     ?ERROR("~p receive unknow cast: ~p~n", [?MODULE, _Msg]),
     {noreply, State}.
@@ -90,8 +97,6 @@ handle_cast(_Msg, State) ->
     NewState :: #player{}.
 handle_info({'DOWN', _Ref, process, _Pid, _Reason}, Player = #player{data_ref = _Ref}) ->
     {noreply, Player#player{data_pid = undefined}};
-handle_info({'EXIT', Pid, relogin}, Player) when Pid =:= self() ->
-    {stop, relogin, Player};
 handle_info({'EXIT', _Client, _Reason}, Player = #player{client = _Client}) ->
     ?INFO("client ~p exit~n", [_Client]),
     {stop, client_exit, Player};
@@ -105,17 +110,11 @@ terminate(Reason, Player) ->
     case Reason of
         client_exit ->
             pass;
-        %% TODO 非意外情况特殊处理
+        %% 非意外情况特殊处理
         _ when is_integer(Reason) ->
-            MsgID = demo_proto_convert:id_mf_convert({system, error}, id),
-            Msg = #system_error_s2c{msgid = 0, code = Reason},
-            exit({exit_msg, {MsgID, Msg}});
+            send_exit(Reason, Player);
         _ ->
-            %% HACK 利用'EXIT'消息特殊处理的逻辑  期待更好的写法
-            MsgID = demo_proto_convert:id_mf_convert({system, error}, id),
-            Msg = #system_error_s2c{msgid = 0, code = ?E_PLAYER_TERMINATE},
-            %% TODO 如果各种这种方式影响到了各种报警系统 则换成直接发消息
-            exit({exit_msg, {MsgID, Msg}})
+            send_exit(?E_PLAYER_TERMINATE, Player)
     end,
     ok.
 
@@ -125,3 +124,8 @@ cache_check(Player = #player{id = ID}) ->
     Pid = player_data_mgr:get(ID),
     Ref = monitor(process, Pid),
     Player#player{data_pid = Pid, data_ref = Ref}.
+
+send_exit(Reason, #player{client = Client}) ->
+    MsgID = demo_proto_convert:id_mf_convert({system, error}, id),
+    Msg = #system_error_s2c{msgid = 0, code = Reason},
+    Client ! {exit, {MsgID, Msg}}.

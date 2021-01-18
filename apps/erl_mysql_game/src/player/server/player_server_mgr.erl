@@ -54,7 +54,7 @@ init([Tab]) ->
     {L1, L2} = lists:unzip([
         begin
             Ref = monitor(process, PlayerServer),
-            ets:insert(ID, PlayerServer),
+            ets:insert(IDTab, {ID, PlayerServer}),
             {{Ref, {AccID, ID}}, {PlayerServer, Ref}}
         end
         || {AccID, ID, {_Client, PlayerServer}} <- ets:tab2list(Tab)
@@ -95,14 +95,13 @@ handle_call(Msg, From, State) ->
         safe_handle_call(Msg, From, State)
     catch
         E:R:T ->
-            ?ERROR("~p, handle call error: ", [?MODULE, {E, R, T}]),
+            ?ERROR("~p, handle call error: ~p~n ", [?MODULE, {E, R, T}]),
             {reply, {error, ?E_SYSTEM}, State}
     end.
 
 %% 模块内发送错误码可以简化为throw 业务流程上出于明确过程的考虑 采用的是手动发送的方式
 safe_handle_call(
-    {create,
-        {#auth_ret{platform = Platform, accname = AccName}, {Mod, #acc_create_c2s{}}, _Client},
+    {create, {#auth_ret{platform = Platform, accname = AccName}, {Mod, #acc_create_c2s{}}, _Client},
         Args},
     _From,
     State
@@ -151,7 +150,7 @@ safe_handle_call(
 
             Ref = maps:get(Pid, Pid2Ref0),
             demonitor(Ref),
-            exit(Pid, ?E_PLAYER_KICK_BY_OTHER),
+            player_server:stop(Pid, ?E_PLAYER_KICK_BY_OTHER),
             Pid2Ref1 = maps:remove(Pid, Pid2Ref0),
             Monitors1 = maps:remove(Ref, Monitors0),
 
@@ -260,7 +259,10 @@ do_enter(
         Ref = monitor(process, Pid),
         NewMonitors = (State#state.monitors)#{
             Ref =>
-                {AccID, Client, Pid}
+                {AccID, ID}
+        },
+        NewPid2Ref = (State#state.pid2ref)#{
+            Pid => Ref
         },
         begin
             %% add related data
@@ -272,7 +274,8 @@ do_enter(
         MsgID = demo_proto_convert:id_mf_convert(Mod, id),
         Msg = #acc_enter_s2c{code = 0},
         {reply, {ok, {send_push, {MsgID, Msg}}}, State#state{
-            monitors = NewMonitors
+            monitors = NewMonitors,
+            pid2ref = NewPid2Ref
         }}
     catch
         throw:Err -> {reply, Err, State}

@@ -11,7 +11,7 @@
 
 -include_lib("erl_logger/include/logger.hrl").
 -include_lib("eunit/include/eunit.hrl").
--include_lib("pmod/include/pmod.hrl").
+-include_lib("pmod_transform/include/pmod.hrl").
 
 -record(state, {config_tab}).
 
