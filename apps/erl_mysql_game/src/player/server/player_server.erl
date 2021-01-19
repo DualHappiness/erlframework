@@ -70,7 +70,7 @@ when
 handle_call({route_msg, Msg, Args}, _From, Player) ->
     case gen_mod:handle_c2s(Msg, Args, cache_check(Player)) of
         {error, _} = Err -> {reply, Err, Player};
-        {ok, Reply, NewPlayer} -> {reply, Reply, NewPlayer}
+        {ok, Reply, NewPlayer} -> {reply, {ok, Reply}, NewPlayer}
     end;
 handle_call(_Msg, _From, State) ->
     ?ERROR("~p receive unknow call: ~p~n", [?MODULE, _Msg]),

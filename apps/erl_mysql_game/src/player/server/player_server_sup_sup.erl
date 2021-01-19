@@ -23,7 +23,7 @@ start_link() ->
 
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-    Tab = ets:new(player_server_mgr, [public, set, named_table, {read_concurrency, true}]),
+    Tab = player_server_mgr:new_acc_tab(),
     [
         begin
             datatable:start([#datatable_declare{table = Table}]),

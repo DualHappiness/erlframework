@@ -21,7 +21,7 @@ start_link() ->
 
 -spec init(Args :: [term()]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-    Tab = ets:new(player_data_mgr, [set, public, named_table, {read_concurrency, true}]),
+    Tab = player_data_mgr:new_data_tab(),
 
     SupFlags = #{strategy => one_for_one, intensity => 10, period => 5},
     ChildSpecs = [

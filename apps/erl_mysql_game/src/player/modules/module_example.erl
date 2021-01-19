@@ -2,9 +2,7 @@
 
 -behaviour(gen_mod).
 
--ifndef(TEST).
 -on_load(init/0).
--endif.
 
 -include("player.hrl").
 

@@ -9,7 +9,7 @@
 
 -behaviour(gen_server).
 
--record(state, {tab, id2pid_tab, monitors = #{}, pid2ref = #{}}).
+-record(state, {monitors = #{}, pid2ref = #{}}).
 
 -include_lib("erl_logger/include/logger.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -35,6 +35,7 @@
 -define(PLAYER_ID2PID_TAB, player_server_id2pid).
 
 -export([start_link/1]).
+-export([new_acc_tab/0]).
 -export([get_pid/1, route_msg/2]).
 
 -export([init/1]).
@@ -48,20 +49,14 @@ start_link(Tab) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [Tab], []).
 
 -spec init(Args :: [term()]) -> {ok, #state{}}.
-init([Tab]) ->
-    %% 理论上 不要用tab2list 但数据都一样 用match 没啥必要
-    IDTab = ets:new(?PLAYER_ID2PID_TAB, [public, set, named_table, {read_concurrency, true}]),
-    {L1, L2} = lists:unzip([
-        begin
-            Ref = monitor(process, PlayerServer),
-            ets:insert(IDTab, {ID, PlayerServer}),
-            {{Ref, {AccID, ID}}, {PlayerServer, Ref}}
-        end
-        || {AccID, ID, {_Client, PlayerServer}} <- ets:tab2list(Tab)
-    ]),
-    Monitors = maps:from_list(L1),
-    Pid2Ref = maps:from_list(L2),
-    {ok, #state{tab = Tab, id2pid_tab = IDTab, monitors = Monitors, pid2ref = Pid2Ref}}.
+init([_Tab]) ->
+    new_id2player_tab(),
+    State = rebuild_id_map(#state{}),
+    {ok, State}.
+
+-spec new_acc_tab() -> ets:tab().
+new_acc_tab() ->
+    ets:new(player_server_mgr, [public, set, named_table, {read_concurrency, true}]).
 
 -spec get_pid(player:id()) -> undefined | pid().
 get_pid(ID) ->
@@ -146,15 +141,10 @@ safe_handle_call(
         {Client, _Pid} ->
             {reply, {error, ?E_PLAYER_ALREADY_ENTER}, State};
         {_Other, Pid} ->
-            #state{pid2ref = Pid2Ref0, monitors = Monitors0} = State,
-
-            Ref = maps:get(Pid, Pid2Ref0),
-            demonitor(Ref),
+            Ref = maps:get(Pid, State#state.pid2ref),
+            NewState = remove_player(Ref, State),
             player_server:stop(Pid, ?E_PLAYER_KICK_BY_OTHER),
-            Pid2Ref1 = maps:remove(Pid, Pid2Ref0),
-            Monitors1 = maps:remove(Ref, Monitors0),
-
-            do_enter(Msg, State#state{pid2ref = Pid2Ref1, monitors = Monitors1})
+            do_enter(Msg, NewState)
     end;
 safe_handle_call(_Msg, _From, State) ->
     ?INFO("~p, handle unknow msg: ~p~n", [?MODULE, _Msg]),
@@ -176,18 +166,10 @@ handle_cast(_Msg, State) ->
     NewState :: #state{}.
 handle_info(
     {'DOWN', Ref, process, _Pid, _Reason},
-    State = #state{tab = Tab, id2pid_tab = IDTab, monitors = Monitors}
+    State
 ) ->
-    NewMonitors =
-        case maps:get(Ref, Monitors, undefined) of
-            undefined ->
-                Monitors;
-            {Sign, ID} ->
-                ets:delete(Tab, Sign),
-                ets:delete(IDTab, ID),
-                maps:remove(Ref, Monitors)
-        end,
-    {noreply, State#state{monitors = NewMonitors}};
+    NewState = remove_player(Ref, State),
+    {noreply, NewState};
 handle_info(_Info, State) ->
     ?ERROR("~p receive unknow info: ~p~n", [?MODULE, _Info]),
     {noreply, State}.
@@ -236,7 +218,7 @@ route_call(_Msg, _Args) ->
 -spec do_enter(msg(), #state{}) -> reply(term(), #state{}).
 do_enter(
     {#auth_ret{accname = AccName, platform = Platform}, {Mod, #acc_enter_c2s{}}, Client},
-    State = #state{tab = Tab, id2pid_tab = IDTab}
+    State
 ) ->
     try
         AccID = {AccName, Platform},
@@ -256,27 +238,67 @@ do_enter(
         ?IF(?MATCHES({error, _}, ServerRet), throw(ServerRet), pass),
 
         {ok, Pid} = ServerRet,
-        Ref = monitor(process, Pid),
-        NewMonitors = (State#state.monitors)#{
-            Ref =>
-                {AccID, ID}
-        },
-        NewPid2Ref = (State#state.pid2ref)#{
-            Pid => Ref
-        },
-        begin
-            %% add related data
-            ets:insert(Tab, {AccID, ID, {Client, Pid}}),
-            ets:insert(IDTab, {ID, Pid}),
-            ok
-        end,
+        NewState = add_player(AccID, ID, Client, Pid, State),
 
         MsgID = demo_proto_convert:id_mf_convert(Mod, id),
         Msg = #acc_enter_s2c{code = 0},
-        {reply, {ok, {send_push, {MsgID, Msg}}}, State#state{
-            monitors = NewMonitors,
-            pid2ref = NewPid2Ref
-        }}
+        {reply, {ok, {send_push, {MsgID, Msg}}}, NewState}
     catch
         throw:Err -> {reply, Err, State}
+    end.
+
+%%% data 相关
+-spec new_id2player_tab() -> ets:tab().
+new_id2player_tab() ->
+    ets:new(?PLAYER_ID2PID_TAB, [protected, set, named_table, {read_concurrency, true}]).
+
+-spec mon_player(term(), player:id(), pid(), {map(), map()}) -> {map(), map()}.
+mon_player(AccID, ID, Pid, {Monitors, Pid2Ref}) ->
+    Ref = monitor(process, Pid),
+    {Monitors#{Ref => {AccID, ID, Pid}}, Pid2Ref#{Pid => Ref}}.
+
+-spec rebuild_id_map(State :: #state{}) -> State :: #state{}.
+rebuild_id_map(State) ->
+    {Monitors, Pid2Ref} = rebuild_loop(ets:first(?MODULE), {#{}, #{}}),
+    State#state{monitors = Monitors, pid2ref = Pid2Ref}.
+
+-spec rebuild_loop(term() | '$end_of_table', {map(), map()}) -> {map(), map()}.
+rebuild_loop('$end_of_table', Ret) ->
+    Ret;
+rebuild_loop(AccID, Ret) ->
+    [{AccID, ID, {_Client, Pid}}] = ets:lookup(?MODULE, AccID),
+    ets:insert(?PLAYER_ID2PID_TAB, {ID, Pid}),
+    rebuild_loop(ets:next(?MODULE, AccID), mon_player(AccID, ID, Pid, Ret)).
+
+-spec add_player(
+    AccID :: term(),
+    player:id(),
+    Client :: pid(),
+    Player :: pid(),
+    State :: #state{}
+) -> NewState :: #state{}.
+add_player(AccID, ID, Client, Pid, State) ->
+    {NewMonitors, NewPid2Ref} = mon_player(
+        AccID,
+        ID,
+        Pid,
+        {State#state.monitors, State#state.pid2ref}
+    ),
+    %% add related data
+    ets:insert(?MODULE, {AccID, ID, {Client, Pid}}),
+    ets:insert(?PLAYER_ID2PID_TAB, {ID, Pid}),
+    State#state{monitors = NewMonitors, pid2ref = NewPid2Ref}.
+
+remove_player(Ref, State = #state{monitors = Monitors, pid2ref = Pid2Ref}) ->
+    case maps:is_key(Ref, Monitors) of
+        false ->
+            State;
+        true ->
+            demonitor(Ref, [flush]),
+            #{Ref := {AccID, ID, Pid}} = Monitors,
+            ets:delete(?MODULE, AccID),
+            ets:delete(?PLAYER_ID2PID_TAB, ID),
+            NewMonitors = maps:remove(Ref, Monitors),
+            NewPid2Ref = maps:remove(Pid, Pid2Ref),
+            State#state{monitors = NewMonitors, pid2ref = NewPid2Ref}
     end.

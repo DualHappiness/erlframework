@@ -4,4 +4,4 @@
           loader_template,module_example,player,player_data,player_data_mgr,
           player_data_sup,player_data_sup_sup,player_id_server,player_server,
           player_server_mgr,player_server_sup,player_server_sup_sup,
-          player_sup,proto_util,servers_sup]}.
+          player_sup,proto_util,servers_sup,test_util]}.

@@ -26,7 +26,7 @@
 -export([init_player/1, terminate_player/1]).
 -export([handle_c2s/3, handle_s2s_call/3, handle_s2s_cast/3]).
 
--export([init/0]).
+-export([init/0, re_init_all/0]).
 
 -type id() :: player:id().
 -type player() :: player:player().
@@ -57,7 +57,12 @@
 init() ->
     ets:new(?MODULE, [public, set, named_table, {read_concurrency, true}]),
     %% 利用on_load来实现init 这样热更的时候就会更简单
-    % [Mod:module_info() || Mod <- get_all_module()],
+    [Mod:module_info() || Mod <- get_all_module()],
+    ok.
+
+%% HACK 用来给或者动态升级不会触发on_load的时候使用
+re_init_all() ->
+    [Mod:init() || Mod <- get_all_module()],
     ok.
 
 get_all_module() ->

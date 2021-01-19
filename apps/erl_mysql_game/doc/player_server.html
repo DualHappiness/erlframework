@@ -38,6 +38,7 @@
 <tr><td valign="top"><a href="#init-1">init/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#route_msg-3">route_msg/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#start_link-2">start_link/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#stop-2">stop/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#terminate-2">terminate/2</a></td><td></td></tr>
 </table>
 
@@ -79,6 +80,12 @@
 <h3 class="function"><a name="start_link-2">start_link/2</a></h3>
 <div class="spec">
 <p><tt>start_link(ID::<a href="player.html#type-id">player:id()</a>, Client::pid()) -&gt; {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::any()}</tt><br></p>
+<p> </p>
+</div>
+
+<h3 class="function"><a name="stop-2">stop/2</a></h3>
+<div class="spec">
+<p><tt>stop(Pid::pid(), Reason::term()) -&gt; ok</tt><br></p>
 <p> </p>
 </div>
 

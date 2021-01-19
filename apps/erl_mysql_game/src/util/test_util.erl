@@ -49,7 +49,7 @@ end_per_suite(_Config) ->
     ok = application:stop(?APPNAME).
 
 auth_ret() ->
-    #auth_ret{accname = <<"ct_123">>, platform = dev}.
+    #auth_ret{accname = <<"ct_123">>, platform = dev, accsign = <<>>}.
 
 test_msg() ->
     Mod = {test, part1},

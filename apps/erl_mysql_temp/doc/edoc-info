@@ -1,5 +1,4 @@
 %% encoding: UTF-8
 {application,erl_mysql_temp}.
 {modules,[dataloggersql_helper,datatable_account,datatable_account2player,
-          datatable_player,datatable_test,db_account2player,db_player,db_test,
-          erl_mysql_test_util]}.
+          datatable_player,db_account2player,db_player,erl_mysql_test_util]}.

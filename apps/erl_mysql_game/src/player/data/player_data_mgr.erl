@@ -9,7 +9,7 @@
 
 -behaviour(gen_server).
 
--record(state, {tab, monitors :: map()}).
+-record(state, {monitors :: map()}).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("erl_logger/include/logger.hrl").
@@ -23,6 +23,7 @@
 -compile({no_auto_import, [{get, 1}]}).
 
 -export([start_link/1]).
+-export([new_data_tab/0]).
 -export([new/1, get/1, get_or_new/1]).
 -export([init/1]).
 -export([handle_cast/2, handle_call/3, handle_info/2]).
@@ -33,6 +34,10 @@
     | {error, Reason :: any()}.
 start_link(Tab) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [Tab], []).
+
+-spec new_data_tab() -> ets:tab().
+new_data_tab() ->
+    ets:new(player_data_mgr, [set, public, named_table, {read_concurrency, true}]).
 
 -spec new(ID :: id()) -> {ok, pid()} | {error, Reason :: term()}.
 new(ID) ->
@@ -58,9 +63,9 @@ get_or_new(ID) ->
     end.
 
 -spec init(Args :: [term()]) -> {ok, #state{}}.
-init([Tab]) ->
-    Monitors = maps:from_list([{monitor(process, Pid), {ID, Pid}} || {ID, Pid} <- ets:tab2list(Tab)]),
-    {ok, #state{tab = Tab, monitors = Monitors}}.
+init([_Tab]) ->
+    State = rebuild_monitor(#state{}),
+    {ok, State}.
 
 -spec handle_call(Msg, From, State) ->
     reply(Reply, NewState)
@@ -93,10 +98,8 @@ safe_handle_call({new, ID}, _From, State) ->
                 {error, _} = Err ->
                     {reply, Err, State};
                 {ok, Pid} ->
-                    ets:insert(State#state.tab, {ID, Pid}),
-                    Ref = monitor(process, Pid),
-                    NewMonitors = (State#state.monitors)#{Ref => {ID, Pid}},
-                    {reply, {ok, Pid}, State#state{monitors = NewMonitors}}
+                    NewState = add_data(ID, Pid, State),
+                    {reply, {ok, Pid}, NewState}
             end
     end;
 safe_handle_call(_Msg, _From, State) ->
@@ -120,30 +123,60 @@ handle_cast(_Msg, State) ->
 handle_info({'DOWN', Ref, process, Pid, Reason}, State) when
     Reason =:= normal; Reason =:= shutdown
 ->
-    do_remove({Ref, Pid}, State);
-handle_info({'DOWN', Ref, process, Pid, _Reason}, State = #state{tab = Tab, monitors = Monitors}) ->
+    NewState = remove_data(Ref, Pid, State),
+    {noreply, NewState};
+handle_info({'DOWN', Ref, process, Pid, _Reason}, State) ->
     ?ERROR("player data down abnormal. Reason is :~p~n", [_Reason]),
-    case maps:get(Ref, Monitors, undefined) of
-        {ID, Pid} ->
+    case maps:is_key(Ref, State#state.monitors) of
+        false ->
+            {noreply, State};
+        true ->
+            #{Ref := {ID, Pid}} = State#state.monitors,
+            State1 = remove_data(Ref, Pid, State),
             %% ! 确保一定会成功
             {ok, NewPid} = player_data_sup:new(ID),
-            ets:insert(Tab, {ID, NewPid}),
-            NewRef = monitor(process, NewPid),
-            NewMonitors = maps:put(NewRef, NewPid, maps:remove(Ref, Monitors)),
-            {noreply, State#state{monitors = NewMonitors}};
-        _ ->
-            {noreply, State}
+            State2 = add_data(ID, NewPid, State1),
+            {noreply, State2}
     end;
 handle_info(_Info, State) ->
     ?ERROR("~p receive unknow info: ~p~n", [?MODULE, _Info]),
     {noreply, State}.
 
-do_remove({Ref, Pid}, State = #state{tab = Tab, monitors = Monitors}) ->
-    case maps:get(Ref, Monitors, undefined) of
-        {ID, Pid} ->
-            ets:delete(Tab, ID),
+%%==============================================================================
+%% data api
+%%==============================================================================
+-spec mon_data(player:id(), pid(), Monitors :: map()) -> NewMonitors :: map().
+mon_data(ID, Pid, Monitors) ->
+    Ref = monitor(process, Pid),
+    Monitors#{Ref => {ID, Pid}}.
+
+-spec rebuild_monitor(State :: #state{}) -> NewState :: #state{}.
+rebuild_monitor(State) ->
+    Monitors = rebuild_loop(ets:first(?MODULE), #{}),
+    State#state{monitors = Monitors}.
+
+-spec rebuild_loop(Key :: term() | '$end_of_table', Monitors :: map()) -> NewMonitors :: map().
+rebuild_loop('$end_of_table', Monitors) ->
+    Monitors;
+rebuild_loop(ID, Monitors) ->
+    [{ID, Pid}] = ets:lookup(?MODULE, ID),
+    rebuild_loop(ets:next(?MODULE, ID), mon_data(ID, Pid, Monitors)).
+
+-spec add_data(ID :: player:id(), Pid :: pid(), State :: #state{}) -> NewState :: #state{}.
+add_data(ID, Pid, State) ->
+    ets:insert(?MODULE, {ID, Pid}),
+    NewMonitors = mon_data(ID, Pid, State#state.monitors),
+    State#state{monitors = NewMonitors}.
+
+-spec remove_data(reference(), pid(), State :: #state{}) -> NewState :: #state{}.
+remove_data(Ref, Pid, State = #state{monitors = Monitors}) ->
+    case maps:is_key(Ref, Monitors) of
+        false ->
+            State;
+        true ->
+            #{Ref := {ID, Pid}} = Monitors,
+            demonitor(Ref, [flush]),
+            ets:delete(?MODULE, ID),
             NewMonitors = maps:remove(Ref, Monitors),
-            {noreply, State#state{monitors = NewMonitors}};
-        _ ->
-            {noreply, State}
+            State#state{monitors = NewMonitors}
     end.

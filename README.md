@@ -10,7 +10,7 @@ erl_mysql_demo
 
 ## TODO LIST
 - ~~gen_mod 功能~~
-- 单节点测试
+- ~~单节点测试~~
 - gen_mod remote call
 - 多节点测试
 - data loader 增加unload

@@ -52,11 +52,6 @@ end_per_suite(_Config) ->
 auth_ret() ->
     #auth_ret{accname = <<"ct_123">>, platform = dev}.
 
-test_msg() ->
-    Mod = {test, part1},
-    Rec = #test_part1_c2s{value = 1},
-    {Mod, Rec}.
-
 create_msg() ->
     Mod = {acc, create},
     Rec = #acc_create_c2s{},
@@ -91,7 +86,22 @@ common_test(_Config) ->
     ?MATCH_MSG(#acc_enter_s2c{}),
     ok.
 
+test_msg() ->
+    Mod = {test, part1},
+    Rec = #test_part1_c2s{value = 1},
+    {Mod, Rec}.
+
 gen_mod_test(_Config) ->
+    Auth = auth_ret(),
+    Self = self(),
+    Args = [],
+
+    gen_mod:re_init_all(),
+    {ok, ok} = route_msg({Auth, enter_msg(), Self}, Args),
+    ?MATCH_MSG(#acc_enter_s2c{}),
+
+    {ok, ok} = route_msg({Auth, test_msg(), Self}, Args),
+    ?MATCH_MSG(#test_part1_s2c{value = 2}),
     ok.
 
 make_client() ->
@@ -149,7 +159,9 @@ close_test(_Config) ->
             {exit, {_, #system_error_s2c{code = ?E_SYSTEM}}} -> ok
         after 1000 -> throw(stop_error)
         end,
-        receive after 100 -> ok end,
+        receive
+        after 100 -> ok
+        end,
         ?assertMatch(undefined, process_info(Client)),
         ?assertMatch(undefined, process_info(Pid)),
         ?assertMatch(undefined, player_server_mgr:get_pid(ID))
@@ -164,7 +176,9 @@ relogin_test(_Config) ->
     after 1000 -> throw(relogin_error)
     end,
 
-    receive after 100 -> ok end,
+    receive
+    after 100 -> ok
+    end,
     ?assertMatch(undefined, process_info(Client1)),
     ?assertNotMatch(undefined, process_info(Client2)),
     ?assertMatch(undefined, process_info(Pid1)),
