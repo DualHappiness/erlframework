@@ -16,7 +16,8 @@
         erl_dynamic,
         dataloggersql,
         datatable,
-        desc_container
+        desc_container,
+        erl_mysql_common
     ]},
     {env, []},
     {modules, []},

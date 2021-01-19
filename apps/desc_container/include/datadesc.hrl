@@ -2,6 +2,7 @@
 -define(DATADESC_HRL, true).
 
 -define(TABLE_NAMES, [rank, account, account2player, player, test]).
+
 -record(rank_keys, {player_id, weapon_id}).
 -record(rank_values, {rank}).
 -record(rank_all, {player_id, weapon_id, rank}).
@@ -22,9 +23,9 @@
 -record(test_values, {val1}).
 -record(test_all, {key1, val1}).
 
-
 -ifndef(DATADESC_NOIMPORT).
 -import(datadesc_helper, [fields/1, values/1, where/1, fields_str/1]).
+
 -inline([fields/1, values/1, where/1, fields_str]).
 -endif.
 -endif.

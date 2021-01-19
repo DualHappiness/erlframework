@@ -18,7 +18,7 @@
 -include_lib("proto_container/include/demo_proto_error_code.hrl").
 -include_lib("desc_container/include/datadesc.hrl").
 -include_lib("erl_oauth_lib/include/erl_oauth_lib.hrl").
--include_lib("erl_mysql_demo/include/project.hrl").
+-include_lib("erl_mysql_common/include/project.hrl").
 
 -type msg() :: {#auth_ret{}, {Mod :: term(), Record :: term()}, From :: pid()}.
 -type msg_ret() ::

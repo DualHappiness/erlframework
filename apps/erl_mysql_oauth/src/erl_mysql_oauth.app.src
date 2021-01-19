@@ -12,7 +12,8 @@
         proto_container,
         erl_mysql_adapter,
         desc_container,
-        datatable
+        datatable,
+        erl_mysql_common
     ]},
     {env, []},
     {modules, []},
