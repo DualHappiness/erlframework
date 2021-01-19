@@ -1,0 +1,10 @@
+{application,erl_mysql_demo,
+             [{registered,[]},
+              {description,"gate, oauth and game"},
+              {vsn,"1.0.0"},
+              {applications,[kernel,stdlib,dataloggersql,erl_mysql_game,
+                             erl_mysql_gate,erl_mysql_oauth]},
+              {env,[]},
+              {modules,[]},
+              {licenses,["Apache 2.0"]},
+              {links,[]}]}.

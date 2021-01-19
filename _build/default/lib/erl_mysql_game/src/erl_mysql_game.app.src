@@ -1,0 +1,27 @@
+{application, erl_mysql_game, [
+    {description, "game"},
+    {vsn, "1.0.0"},
+    {registered, [
+        player_id_server,
+        player_server_sup,
+        player_server_mgr,
+        player_data_sup,
+        player_data_mgr,
+        player_id_server
+    ]},
+    {mod, {erl_mysql_game_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        erl_dynamic,
+        dataloggersql,
+        datatable,
+        desc_container,
+        erl_mysql_common
+    ]},
+    {env, []},
+    {modules, []},
+
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

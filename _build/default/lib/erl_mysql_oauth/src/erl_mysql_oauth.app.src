@@ -1,0 +1,23 @@
+{application, erl_mysql_oauth, [
+    {description, "oauth server app"},
+    {vsn, "1.0.0"},
+    {registered, []},
+    {mod, {erl_mysql_oauth_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        eunit,
+        erl_logger,
+        erl_oauth_lib,
+        proto_container,
+        erl_mysql_adapter,
+        desc_container,
+        datatable,
+        erl_mysql_common
+    ]},
+    {env, []},
+    {modules, []},
+
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

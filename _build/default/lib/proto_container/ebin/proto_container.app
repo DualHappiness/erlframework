@@ -1,0 +1,12 @@
+{application,proto_container,
+             [{registered,[]},
+              {description,"proto container"},
+              {vsn,"1.0.0"},
+              {applications,[kernel,stdlib]},
+              {env,[]},
+              {modules,[demo_proto,demo_proto_acc,demo_proto_c2s,
+                        demo_proto_convert,demo_proto_custom_types,
+                        demo_proto_friend_service,demo_proto_s2c,
+                        demo_proto_system,demo_proto_test,demo_proto_util]},
+              {licenses,["Apache 2.0"]},
+              {links,[]}]}.
